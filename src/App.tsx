@@ -14,6 +14,7 @@ import Admin from './pages/Admin';
 import { db } from './firebase';
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import LoadingAnimation from './components/LoadingAnimation';
+import { CartProvider } from './context/CartContext';
 
 // The default store slug shown at the root URL
 const DEFAULT_STORE_SLUG = 'mika';
@@ -94,6 +95,7 @@ export default function App() {
   }
 
   return (
+    <CartProvider>
     <BrowserRouter>
       <div className="min-h-screen bg-white text-black font-sans flex flex-col">
         <Navbar user={user} />
@@ -189,6 +191,7 @@ export default function App() {
         <Footer />
       </div>
     </BrowserRouter>
+    </CartProvider>
   );
 }
 

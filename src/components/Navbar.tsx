@@ -3,8 +3,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { auth, db } from '../firebase';
 import { signInWithPopup, GoogleAuthProvider, signOut, User } from 'firebase/auth';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { Package, LogIn, LogOut, LayoutDashboard, Store, Users, Shield } from 'lucide-react';
+import { Package, LogIn, LogOut, LayoutDashboard, Store, Users, Shield, ShoppingBag } from 'lucide-react';
 import { doc, getDoc } from 'firebase/firestore';
+import { useCart } from '../context/CartContext';
 
 interface NavbarProps {
   user: User | null;
@@ -14,6 +15,7 @@ export default function Navbar({ user }: NavbarProps) {
   const navigate = useNavigate();
   const [userSlug, setUserSlug] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const cart = useCart();
 
   // Fetch the signed-in user's store slug
   useEffect(() => {
@@ -78,6 +80,20 @@ export default function Navbar({ user }: NavbarProps) {
         </Link>
 
         <div className="flex items-center gap-1.5 sm:gap-3">
+          {/* Cart button — visible when items in bag */}
+          {cart.totalItems > 0 && (
+            <button
+              onClick={() => cart.setShowCart(true)}
+              className="relative flex items-center gap-2 p-2 sm:px-3 sm:py-2 border-[3px] border-black brutal-shadow-small bg-neon-pink hover:brightness-110 transition-all mono text-xs font-bold uppercase"
+            >
+              <ShoppingBag className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Bag</span>
+              <span className="absolute -top-2 -right-2 bg-black text-white text-[10px] font-mono font-bold w-5 h-5 flex items-center justify-center border-[2px] border-black">
+                {cart.totalItems}
+              </span>
+            </button>
+          )}
+
           {/* Explore link */}
           <Link
             to="/explore"

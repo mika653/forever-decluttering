@@ -1,13 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { db } from '../firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { Store, Item } from '../types';
 import StoreHeader from '../components/StoreHeader';
 import ItemCard from '../components/ItemCard';
-import { Package, Search, Ban, Flag } from 'lucide-react';
+import { Package, Search, Ban, Flag, ShoppingBag, Check, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import LoadingAnimation from '../components/LoadingAnimation';
 import ReportModal from '../components/ReportModal';
+import CartSheet from '../components/CartSheet';
+import { useCart } from '../context/CartContext';
 
 interface StorePageProps {
   defaultSlug?: string;
@@ -23,6 +26,18 @@ export default function StorePage({ defaultSlug }: StorePageProps = {}) {
   const [error, setError] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showReport, setShowReport] = useState(false);
+  const [toast, setToast] = useState<{ message: string; key: number } | null>(null);
+  const cart = useCart();
+
+  const handleToggleBag = useCallback((item: Item) => {
+    if (cart.isInCart(item.id)) {
+      cart.removeItem(item.id);
+      setToast({ message: `Removed "${item.title}"`, key: Date.now() });
+    } else {
+      cart.addItem(item);
+      setToast({ message: `Added "${item.title}" to bag!`, key: Date.now() });
+    }
+  }, [cart]);
 
   useEffect(() => {
     if (!slug) return;
@@ -53,6 +68,8 @@ export default function StorePage({ defaultSlug }: StorePageProps = {}) {
           .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
 
         setItems(itemsData);
+        // Set store in cart context for the WhatsApp message
+        cart.setStore(storeSnapshot.docs[0].data() as Store);
       } catch (err) {
         console.error('Error loading store:', err);
         setError(true);
@@ -146,7 +163,12 @@ export default function StorePage({ defaultSlug }: StorePageProps = {}) {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {filteredItems.map((item) => (
           <div key={item.id}>
-            <ItemCard item={item} storeSlug={slug!} />
+            <ItemCard
+              item={item}
+              storeSlug={slug!}
+              onAddToBag={() => handleToggleBag(item)}
+              isInBag={cart.isInCart(item.id)}
+            />
           </div>
         ))}
       </div>
@@ -181,6 +203,75 @@ export default function StorePage({ defaultSlug }: StorePageProps = {}) {
         targetId={store.slug}
         targetLabel={store.displayName}
       />
+
+      {/* Toast notification — bottom on mobile, top-right on desktop */}
+      <AnimatePresence>
+        {toast && (
+          <>
+            {/* Mobile toast */}
+            <motion.div
+              key={`mobile-${toast.key}`}
+              initial={{ y: 80, opacity: 0, scale: 0.9 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              exit={{ y: 80, opacity: 0, scale: 0.9 }}
+              onAnimationComplete={() => {
+                setTimeout(() => setToast(null), 2000);
+              }}
+              className="md:hidden fixed bottom-24 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-4 py-3 bg-black text-white border-[3px] border-black brutal-shadow-small whitespace-nowrap"
+            >
+              <Check className="w-4 h-4 text-neon-green flex-shrink-0" />
+              <span className="mono text-sm font-bold">{toast.message}</span>
+              <button
+                onClick={() => setToast(null)}
+                className="ml-1 p-0.5 hover:bg-white/20 transition-colors"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </motion.div>
+
+            {/* Desktop toast */}
+            <motion.div
+              key={`desktop-${toast.key}`}
+              initial={{ x: 100, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: 100, opacity: 0 }}
+              onAnimationComplete={() => {
+                setTimeout(() => setToast(null), 2000);
+              }}
+              className="hidden md:flex fixed top-20 right-6 z-50 items-center gap-3 px-5 py-3 bg-black text-white border-[3px] border-black brutal-shadow whitespace-nowrap"
+            >
+              <Check className="w-4 h-4 text-neon-green flex-shrink-0" />
+              <span className="mono text-sm font-bold">{toast.message}</span>
+              <button
+                onClick={() => setToast(null)}
+                className="ml-2 p-1 hover:bg-white/20 transition-colors"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Floating bag FAB */}
+      <AnimatePresence>
+        {cart.totalItems > 0 && (
+          <motion.button
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+            onClick={() => cart.setShowCart(true)}
+            className="fixed bottom-6 right-6 flex items-center gap-2 px-5 py-3 bg-neon-pink border-[3px] border-black brutal-shadow font-display text-base z-40 hover:scale-105 transition-transform"
+          >
+            <ShoppingBag className="w-5 h-5" />
+            <span>Bag ({cart.totalItems})</span>
+            <span className="mono text-sm font-bold">₱{cart.totalPrice}</span>
+          </motion.button>
+        )}
+      </AnimatePresence>
+
+      <CartSheet open={cart.showCart} onClose={() => cart.setShowCart(false)} />
     </div>
   );
 }

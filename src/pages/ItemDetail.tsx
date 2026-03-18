@@ -17,6 +17,7 @@ export default function ItemDetail() {
   const [showContact, setShowContact] = useState(false);
   const [showBuyNow, setShowBuyNow] = useState(false);
   const [buyerName, setBuyerName] = useState('');
+  const [buyerContact, setBuyerContact] = useState('');
   const [shippingAddress, setShippingAddress] = useState('');
   const [courier, setCourier] = useState('');
   const [copiedMessage, setCopiedMessage] = useState(false);
@@ -470,6 +471,17 @@ export default function ItemDetail() {
                   />
                 </div>
                 <div>
+                  <label className="mono text-xs font-bold uppercase block mb-1">Contact Number</label>
+                  <input
+                    type="tel"
+                    value={buyerContact}
+                    onChange={(e) => setBuyerContact(e.target.value)}
+                    className="w-full border-[3px] border-black px-3 py-2 mono text-sm focus:outline-none focus:ring-2 focus:ring-neon-pink"
+                    placeholder="09XX XXX XXXX"
+                  />
+                  <p className="mono text-[10px] text-gray-400 mt-0.5">Your WhatsApp/Viber number for the seller to reach you</p>
+                </div>
+                <div>
                   <label className="mono text-xs font-bold uppercase block mb-1">Shipping Address</label>
                   <textarea
                     value={shippingAddress}
@@ -499,7 +511,7 @@ export default function ItemDetail() {
               {/* Send Order via WhatsApp */}
               <a
                 href={`https://${isMobile ? 'api' : 'web'}.whatsapp.com/send?phone=${cleanNumber}&text=${encodeURIComponent(
-                  `Hi! I want to buy your "${item.title}" for ₱${item.price} on Forever Decluttering.\n\n📦 Ship to:\nName: ${buyerName}\nAddress: ${shippingAddress}\nPreferred courier: ${courier}\n\nPlease let me know the shipping fee!\n\n${itemUrl}`
+                  `Hi! I want to buy your "${item.title}" for ₱${item.price} on Forever Decluttering.\n\n📦 Ship to:\nName: ${buyerName}\nContact: ${buyerContact}\nAddress: ${shippingAddress}\nPreferred courier: ${courier}\n\nPlease let me know the shipping fee!\n\n${itemUrl}`
                 )}`}
                 {...(!isMobile ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
                 className={`flex items-center justify-center gap-2 w-full min-h-[48px] py-4 font-display text-lg border-[3px] border-black brutal-shadow no-underline transition-all ${

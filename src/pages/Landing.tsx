@@ -1,8 +1,11 @@
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { auth } from '../firebase';
+import { auth, db } from '../firebase';
 import { signInWithPopup, GoogleAuthProvider, User } from 'firebase/auth';
+import { collection, getDocs } from 'firebase/firestore';
 import { Camera, Link as LinkIcon, MessageCircle, Package, ArrowRight } from 'lucide-react';
 import { motion } from 'motion/react';
+import { Store } from '../types';
 
 interface LandingProps {
   user: User | null;
@@ -27,6 +30,22 @@ export default function Landing({ user }: LandingProps) {
       }
     }
   };
+
+  const [stores, setStores] = useState<Store[]>([]);
+
+  useEffect(() => {
+    const fetchStores = async () => {
+      const snapshot = await getDocs(collection(db, 'stores'));
+      setStores(
+        snapshot.docs
+          .map((d) => d.data() as Store)
+          .filter((s) => !s.suspended)
+      );
+    };
+    fetchStores();
+  }, []);
+
+  const COLORS = ['#FF3D78', '#00D4AA', '#7B68B0', '#FF6B9D', '#0F0F23', '#E0218A', '#1DB954', '#FF9F43'];
 
   // Note: This page is accessible at /start
 
@@ -100,6 +119,52 @@ export default function Landing({ user }: LandingProps) {
           </motion.div>
         ))}
       </div>
+
+      {/* Scrolling Declutterers */}
+      {stores.length > 0 && (
+        <div className="mb-20">
+          <h2 className="text-3xl font-display text-center mb-6 tracking-tighter">
+            Meet the <span className="text-neon-pink">Declutterers</span>
+          </h2>
+          <div className="overflow-hidden border-y-[3px] border-black py-4 bg-white">
+            <div className="flex gap-4 animate-marquee hover:[animation-play-state:paused]">
+              {/* Double the list for seamless loop */}
+              {[...stores, ...stores].map((store, i) => {
+                const color = COLORS[i % COLORS.length];
+                return (
+                  <Link
+                    key={`${store.slug}-${i}`}
+                    to={`/${store.slug}`}
+                    className="flex-shrink-0 flex items-center gap-3 px-5 py-3 border-[3px] border-black brutal-shadow-small hover:translate-y-[-2px] transition-transform no-underline"
+                    style={{ backgroundColor: color }}
+                  >
+                    {store.photoURL ? (
+                      <img
+                        src={store.photoURL}
+                        alt={store.displayName}
+                        className="w-8 h-8 border-[2px] border-black object-cover"
+                        referrerPolicy="no-referrer"
+                      />
+                    ) : (
+                      <div
+                        className="w-8 h-8 border-[2px] border-black bg-white flex items-center justify-center font-display text-sm"
+                      >
+                        {store.displayName.charAt(0)}
+                      </div>
+                    )}
+                    <div>
+                      <p className="font-display text-sm text-white leading-none" style={{ textShadow: '1px 1px 0px rgba(0,0,0,0.3)' }}>
+                        {store.displayName}
+                      </p>
+                      <p className="mono text-[10px] text-white/80">/{store.slug}</p>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Why not Facebook */}
       <div className="border-[3px] border-black p-8 bg-black text-white brutal-shadow mb-20">

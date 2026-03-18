@@ -71,17 +71,6 @@ export default function Navbar({ user }: NavbarProps) {
             Explore
           </Link>
 
-          {/* Portfolio link */}
-          <a
-            href="https://heymika.me"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-8 h-8 border-[3px] border-black brutal-shadow-small bg-[#E0218A] text-white flex items-center justify-center font-display text-sm hover:brightness-110 transition-all"
-            title="heymika.me"
-          >
-            M
-          </a>
-
           {user ? (
             <>
               {/* My Store link */}

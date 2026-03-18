@@ -123,9 +123,18 @@ function Footer() {
   return (
     <footer className="border-t-[3px] border-black mt-16">
       <div className="max-w-6xl mx-auto px-4 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
-        <p className="mono text-xs text-gray-400">
-          Forever Decluttering
-        </p>
+        <a
+          href="https://heymika.me"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+        >
+          <span className="mono text-xs text-gray-400">Powered by</span>
+          <span className="w-6 h-6 bg-[#E0218A] border-[2px] border-black text-white flex items-center justify-center font-display text-xs">
+            M
+          </span>
+          <span className="mono text-xs font-bold text-[#E0218A]">heymika</span>
+        </a>
         <div className="flex flex-col md:flex-row items-center gap-4">
           <a
             href="/explore"

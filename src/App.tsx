@@ -13,6 +13,9 @@ import { db } from './firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { motion } from 'motion/react';
 
+// The default store slug shown at the root URL
+const DEFAULT_STORE_SLUG = 'mika';
+
 function AuthGuard({ user, children }: { user: User | null; children: React.ReactNode }) {
   if (!user) return <Navigate to="/" replace />;
   return <>{children}</>;
@@ -66,12 +69,16 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-white text-black font-sans">
+      <div className="min-h-screen bg-white text-black font-sans flex flex-col">
         <Navbar user={user} />
 
-        <main>
+        <main className="flex-1">
           <Routes>
-            <Route path="/" element={<Landing user={user} />} />
+            {/* Root shows the default store */}
+            <Route path="/" element={<StorePage defaultSlug={DEFAULT_STORE_SLUG} />} />
+
+            {/* Landing / get started page */}
+            <Route path="/start" element={<Landing user={user} />} />
 
             {/* Dashboard routes (auth required) */}
             <Route
@@ -104,7 +111,28 @@ export default function App() {
             <Route path="/:slug/:itemId" element={<ItemDetail />} />
           </Routes>
         </main>
+
+        {/* Footer */}
+        <Footer />
       </div>
     </BrowserRouter>
+  );
+}
+
+function Footer() {
+  return (
+    <footer className="border-t-[3px] border-black mt-16">
+      <div className="max-w-6xl mx-auto px-4 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
+        <p className="mono text-xs text-gray-400">
+          Forever Decluttering
+        </p>
+        <a
+          href="/start"
+          className="mono text-sm font-bold uppercase text-neon-pink hover:text-black transition-colors border-b-2 border-neon-pink hover:border-black"
+        >
+          Want to declutter too? Get your own link &rarr;
+        </a>
+      </div>
+    </footer>
   );
 }

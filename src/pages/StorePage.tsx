@@ -8,8 +8,13 @@ import ItemCard from '../components/ItemCard';
 import { Package, Search } from 'lucide-react';
 import { motion } from 'motion/react';
 
-export default function StorePage() {
-  const { slug } = useParams<{ slug: string }>();
+interface StorePageProps {
+  defaultSlug?: string;
+}
+
+export default function StorePage({ defaultSlug }: StorePageProps = {}) {
+  const { slug: paramSlug } = useParams<{ slug: string }>();
+  const slug = paramSlug || defaultSlug;
   const [store, setStore] = useState<Store | null>(null);
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);

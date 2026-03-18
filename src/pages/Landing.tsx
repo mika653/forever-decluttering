@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { auth } from '../firebase';
 import { signInWithPopup, GoogleAuthProvider, User } from 'firebase/auth';
 import { Camera, Link as LinkIcon, MessageCircle, Package, ArrowRight } from 'lucide-react';
@@ -23,6 +23,8 @@ export default function Landing({ user }: LandingProps) {
       console.error('Login error', err);
     }
   };
+
+  // Note: This page is accessible at /start
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-16">

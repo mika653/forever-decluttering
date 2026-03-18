@@ -9,6 +9,7 @@ import ItemDetail from './pages/ItemDetail';
 import Dashboard from './pages/Dashboard';
 import AddItem from './pages/AddItem';
 import StoreSetup from './pages/StoreSetup';
+import ExploreDeclutterers from './pages/ExploreDeclutterers';
 import { db } from './firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import LoadingAnimation from './components/LoadingAnimation';
@@ -102,6 +103,9 @@ export default function App() {
               }
             />
 
+            {/* Explore declutterers */}
+            <Route path="/explore" element={<ExploreDeclutterers />} />
+
             {/* Public store routes */}
             <Route path="/:slug" element={<StorePage />} />
             <Route path="/:slug/:itemId" element={<ItemDetail />} />
@@ -122,12 +126,20 @@ function Footer() {
         <p className="mono text-xs text-gray-400">
           Forever Decluttering
         </p>
-        <a
-          href="/start"
-          className="mono text-sm font-bold uppercase text-neon-pink hover:text-black transition-colors border-b-2 border-neon-pink hover:border-black"
-        >
-          Want to declutter too? Get your own link &rarr;
-        </a>
+        <div className="flex flex-col md:flex-row items-center gap-4">
+          <a
+            href="/explore"
+            className="mono text-sm font-bold uppercase text-neon-pink hover:text-black transition-colors border-b-2 border-neon-pink hover:border-black"
+          >
+            Explore Declutterers &rarr;
+          </a>
+          <a
+            href="/start"
+            className="mono text-sm font-bold uppercase text-gray-400 hover:text-black transition-colors border-b-2 border-gray-300 hover:border-black"
+          >
+            Want to declutter too? Get your own link &rarr;
+          </a>
+        </div>
       </div>
     </footer>
   );

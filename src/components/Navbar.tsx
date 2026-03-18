@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { auth, db } from '../firebase';
 import { signInWithPopup, GoogleAuthProvider, signOut, User } from 'firebase/auth';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { Package, LogIn, LogOut, LayoutDashboard, Store } from 'lucide-react';
+import { Package, LogIn, LogOut, LayoutDashboard, Store, Users } from 'lucide-react';
 
 interface NavbarProps {
   user: User | null;
@@ -62,6 +62,15 @@ export default function Navbar({ user }: NavbarProps) {
         </Link>
 
         <div className="flex items-center gap-3">
+          {/* Explore link */}
+          <Link
+            to="/explore"
+            className="flex items-center gap-2 px-3 py-2 border-[3px] border-black brutal-shadow-small bg-white hover:bg-gray-100 transition-colors mono text-xs font-bold uppercase"
+          >
+            <Users className="w-3.5 h-3.5" />
+            Explore
+          </Link>
+
           {/* Portfolio link */}
           <a
             href="https://heymika.me"

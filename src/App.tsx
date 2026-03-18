@@ -17,7 +17,7 @@ import LoadingAnimation from './components/LoadingAnimation';
 const DEFAULT_STORE_SLUG = 'mika';
 
 function AuthGuard({ user, children }: { user: User | null; children: React.ReactNode }) {
-  if (!user) return <Navigate to="/" replace />;
+  if (!user) return <Navigate to="/start" replace />;
   return <>{children}</>;
 }
 

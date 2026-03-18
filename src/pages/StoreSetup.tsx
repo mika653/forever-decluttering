@@ -27,7 +27,9 @@ export default function StoreSetup({ user }: StoreSetupProps) {
   const [customCourier, setCustomCourier] = useState('');
   const [slugStatus, setSlugStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
   const [paymentQR, setPaymentQR] = useState<string>('');
+  const [paymentQRs, setPaymentQRs] = useState<{ label: string; url: string }[]>([]);
   const [uploadingQR, setUploadingQR] = useState(false);
+  const [qrLabel, setQrLabel] = useState<string>('GCash');
   const qrInputRef = useRef<HTMLInputElement>(null);
   const [submitting, setSubmitting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -47,6 +49,12 @@ export default function StoreSetup({ user }: StoreSetupProps) {
         setPaymentMethods(storeData.paymentMethods || ['GCash']);
         setCouriers(storeData.couriers || ['J&T Express', 'LBC']);
         setPaymentQR(storeData.paymentQR || '');
+        // Migrate old single paymentQR to paymentQRs array
+        if (storeData.paymentQRs && storeData.paymentQRs.length > 0) {
+          setPaymentQRs(storeData.paymentQRs);
+        } else if (storeData.paymentQR) {
+          setPaymentQRs([{ label: 'GCash', url: storeData.paymentQR }]);
+        }
         setIsEditing(true);
         setSlugStatus('available');
       }
@@ -109,17 +117,22 @@ export default function StoreSetup({ user }: StoreSetupProps) {
 
     setUploadingQR(true);
     try {
-      const filename = `${Date.now()}-${file.name}`;
+      const ext = file.name.split('.').pop() || 'png';
+      const filename = `${qrLabel.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}.${ext}`;
       const storageRef = ref(storage, `stores/${slug.toLowerCase()}/payment-qr/${filename}`);
       await uploadBytes(storageRef, file);
       const url = await getDownloadURL(storageRef);
-      setPaymentQR(url);
+      setPaymentQRs((prev) => [...prev, { label: qrLabel, url }]);
     } catch (err) {
       console.error('QR upload error', err);
     } finally {
       setUploadingQR(false);
       if (qrInputRef.current) qrInputRef.current.value = '';
     }
+  };
+
+  const removeQR = (index: number) => {
+    setPaymentQRs((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -138,7 +151,8 @@ export default function StoreSetup({ user }: StoreSetupProps) {
         contactMethod,
         paymentMethods,
         couriers,
-        paymentQR: paymentQR || null,
+        paymentQR: paymentQRs.length > 0 ? paymentQRs[0].url : (paymentQR || null),
+        paymentQRs: paymentQRs.length > 0 ? paymentQRs : null,
       };
 
       if (!isEditing) {
@@ -316,39 +330,60 @@ export default function StoreSetup({ user }: StoreSetupProps) {
             </div>
           </div>
 
-          {/* Payment QR Code */}
+          {/* Payment QR Codes */}
           <div>
-            <label className="mono text-xs font-bold uppercase block mb-1">Payment QR Code (optional)</label>
-            <p className="mono text-[10px] text-gray-400 mb-2">Upload your GCash, Maya, or bank QR code so buyers can pay easily.</p>
+            <label className="mono text-xs font-bold uppercase block mb-1">Payment QR Codes (optional)</label>
+            <p className="mono text-[10px] text-gray-400 mb-2">Upload your GCash, Maya, or bank QR codes so buyers can pay easily.</p>
 
-            {paymentQR ? (
-              <div className="border-[3px] border-black p-3 bg-gray-50">
-                <img
-                  src={paymentQR}
-                  alt="Payment QR Code"
-                  className="w-48 h-48 object-contain mx-auto mb-3"
-                  referrerPolicy="no-referrer"
-                />
+            {/* Uploaded QR list */}
+            {paymentQRs.length > 0 && (
+              <div className="space-y-2 mb-3">
+                {paymentQRs.map((qr, index) => (
+                  <div key={index} className="border-[3px] border-black p-3 bg-gray-50 flex items-center gap-3">
+                    <img
+                      src={qr.url}
+                      alt={`${qr.label} QR`}
+                      className="w-16 h-16 object-contain border-[2px] border-black bg-white"
+                      referrerPolicy="no-referrer"
+                    />
+                    <span className="mono text-xs font-bold uppercase flex-1">{qr.label}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeQR(index)}
+                      className="flex items-center gap-1 px-2 py-1.5 text-xs font-bold uppercase border-[3px] border-black bg-white hover:bg-red-100 transition-colors brutal-shadow-small"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Add QR Code */}
+            <div className="border-[3px] border-dashed border-black p-3 bg-gray-50">
+              <div className="flex gap-2 mb-2">
+                <select
+                  value={qrLabel}
+                  onChange={(e) => setQrLabel(e.target.value)}
+                  className="flex-1 border-[3px] border-black px-2 py-1.5 mono text-xs font-bold uppercase bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-neon-pink"
+                >
+                  <option value="GCash">GCash</option>
+                  <option value="Maya">Maya</option>
+                  <option value="GoTyme">GoTyme</option>
+                  <option value="Bank Transfer">Bank Transfer</option>
+                  <option value="Other">Other</option>
+                </select>
                 <button
                   type="button"
-                  onClick={() => setPaymentQR('')}
-                  className="flex items-center gap-1 mx-auto px-3 py-1.5 text-xs font-bold uppercase border-[3px] border-black bg-white hover:bg-red-100 transition-colors brutal-shadow-small"
+                  onClick={() => qrInputRef.current?.click()}
+                  disabled={uploadingQR || !slug}
+                  className="flex items-center justify-center gap-2 px-4 py-1.5 border-[3px] border-black bg-white hover:bg-gray-100 transition-colors mono text-xs font-bold uppercase disabled:opacity-50 brutal-shadow-small"
                 >
-                  <Trash2 className="w-3 h-3" />
-                  Remove QR
+                  <Upload className="w-3 h-3" />
+                  {uploadingQR ? 'Uploading...' : 'Add QR Code'}
                 </button>
               </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => qrInputRef.current?.click()}
-                disabled={uploadingQR || !slug}
-                className="flex items-center justify-center gap-2 w-full py-3 border-[3px] border-dashed border-black bg-gray-50 hover:bg-gray-100 transition-colors mono text-sm font-bold uppercase disabled:opacity-50"
-              >
-                <Upload className="w-4 h-4" />
-                {uploadingQR ? 'Uploading...' : 'Upload QR Code'}
-              </button>
-            )}
+            </div>
 
             <input
               ref={qrInputRef}

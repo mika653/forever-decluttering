@@ -20,6 +20,7 @@ export default function ItemDetail() {
   const [courier, setCourier] = useState('');
   const [copiedMessage, setCopiedMessage] = useState(false);
   const [copiedNumber, setCopiedNumber] = useState(false);
+  const [activeQRTab, setActiveQRTab] = useState(0);
 
   useEffect(() => {
     if (!itemId || !slug) return;
@@ -360,18 +361,55 @@ export default function ItemDetail() {
                 </div>
               )}
 
-              {/* Payment QR */}
-              {store.paymentQR && (
-                <div className="border-[3px] border-black p-3 mb-4 bg-gray-50 text-center">
-                  <p className="mono text-xs font-bold uppercase mb-2">Scan to pay</p>
-                  <img
-                    src={store.paymentQR}
-                    alt="Payment QR Code"
-                    className="w-64 h-64 object-contain mx-auto"
-                    referrerPolicy="no-referrer"
-                  />
-                </div>
-              )}
+              {/* Payment QR Codes */}
+              {(() => {
+                const qrList: { label: string; url: string }[] =
+                  store.paymentQRs && store.paymentQRs.length > 0
+                    ? store.paymentQRs
+                    : store.paymentQR
+                      ? [{ label: 'GCash', url: store.paymentQR }]
+                      : [];
+
+                if (qrList.length === 0) return null;
+
+                return (
+                  <div className="border-[3px] border-black p-3 mb-4 bg-gray-50 text-center">
+                    <p className="mono text-xs font-bold uppercase mb-2">Scan to pay</p>
+
+                    {/* Tabs */}
+                    {qrList.length > 1 && (
+                      <div className="flex flex-wrap gap-1 justify-center mb-3">
+                        {qrList.map((qr, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => setActiveQRTab(idx)}
+                            className={`px-3 py-1.5 mono text-xs font-bold uppercase border-[3px] border-black transition-colors ${
+                              activeQRTab === idx
+                                ? 'bg-neon-pink'
+                                : 'bg-white hover:bg-gray-100'
+                            }`}
+                          >
+                            {qr.label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Single label when only one QR */}
+                    {qrList.length === 1 && (
+                      <p className="mono text-[10px] font-bold uppercase text-gray-500 mb-2">{qrList[0].label}</p>
+                    )}
+
+                    <img
+                      src={qrList[activeQRTab < qrList.length ? activeQRTab : 0]?.url}
+                      alt={`${qrList[activeQRTab < qrList.length ? activeQRTab : 0]?.label} QR Code`}
+                      className="w-64 h-64 object-contain mx-auto"
+                      referrerPolicy="no-referrer"
+                    />
+                  </div>
+                );
+              })()}
 
               {/* Buyer form */}
               <div className="space-y-3 mb-4">

@@ -58,16 +58,17 @@ export default function ItemCard({ item, storeSlug, showStatus, onMarkSold, onMa
               <span className="text-neon-green font-display text-3xl rotate-[-12deg]">SOLD</span>
             </div>
           )}
-          {/* Desktop hover overlay */}
+          {/* Desktop hover overlay — only the button is clickable, not the overlay */}
           {onAddToBag && item.status === 'available' && !isInBag && (
-            <div
-              onClick={(e) => handle(e, onAddToBag)}
-              className="hidden md:flex absolute inset-0 bg-black/0 group-hover:bg-black/40 items-end justify-center pb-12 opacity-0 group-hover:opacity-100 transition-all duration-200 cursor-pointer"
-            >
-              <span className="bg-neon-pink border-[3px] border-black px-4 py-2 font-display text-sm brutal-shadow-small translate-y-2 group-hover:translate-y-0 transition-transform duration-200">
+            <div className="hidden md:flex absolute inset-0 pointer-events-none bg-black/0 group-hover:bg-black/40 items-end justify-center pb-12 opacity-0 group-hover:opacity-100 transition-all duration-200">
+              <button
+                type="button"
+                onClick={(e) => handle(e, onAddToBag)}
+                className="pointer-events-auto bg-neon-pink border-[3px] border-black px-4 py-2 font-display text-sm brutal-shadow-small translate-y-2 group-hover:translate-y-0 transition-transform duration-200 cursor-pointer"
+              >
                 <ShoppingBag className="w-4 h-4 inline mr-1.5 -mt-0.5" />
                 Add to Bag
-              </span>
+              </button>
             </div>
           )}
           {onAddToBag && item.status === 'available' && isInBag && (

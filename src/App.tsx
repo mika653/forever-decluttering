@@ -14,7 +14,8 @@ import Admin from './pages/Admin';
 import { db } from './firebase';
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import LoadingAnimation from './components/LoadingAnimation';
-import { CartProvider } from './context/CartContext';
+import { CartProvider, useCart } from './context/CartContext';
+import CartSheet from './components/CartSheet';
 
 // The default store slug shown at the root URL
 const DEFAULT_STORE_SLUG = 'mika';
@@ -190,6 +191,7 @@ export default function App() {
         {/* Footer */}
         <Footer />
       </div>
+      <GlobalCart />
     </BrowserRouter>
     </CartProvider>
   );
@@ -228,4 +230,9 @@ function Footer() {
       </div>
     </footer>
   );
+}
+
+function GlobalCart() {
+  const cart = useCart();
+  return <CartSheet open={cart.showCart} onClose={() => cart.setShowCart(false)} />;
 }

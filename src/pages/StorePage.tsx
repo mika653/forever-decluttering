@@ -9,7 +9,6 @@ import { Package, Search, Ban, Flag, ShoppingBag, Check, X } from 'lucide-react'
 import { motion, AnimatePresence } from 'motion/react';
 import LoadingAnimation from '../components/LoadingAnimation';
 import ReportModal from '../components/ReportModal';
-import CartSheet from '../components/CartSheet';
 import { useCart } from '../context/CartContext';
 
 interface StorePageProps {
@@ -271,7 +270,6 @@ export default function StorePage({ defaultSlug }: StorePageProps = {}) {
         )}
       </AnimatePresence>
 
-      <CartSheet open={cart.showCart} onClose={() => cart.setShowCart(false)} />
     </div>
   );
 }

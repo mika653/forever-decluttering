@@ -281,7 +281,7 @@ export default function ItemDetail() {
                 <h2 className="text-2xl font-display">Message {store.displayName}</h2>
                 <button
                   onClick={() => setShowContact(false)}
-                  className="p-1 border-[3px] border-black hover:bg-gray-100 transition-colors"
+                  className="p-2 border-[3px] border-black hover:bg-gray-100 transition-colors"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -367,7 +367,7 @@ export default function ItemDetail() {
                 <h2 className="text-2xl font-display">Buy Now</h2>
                 <button
                   onClick={() => setShowBuyNow(false)}
-                  className="p-1 border-[3px] border-black hover:bg-gray-100 transition-colors"
+                  className="p-2 border-[3px] border-black hover:bg-gray-100 transition-colors"
                 >
                   <X className="w-4 h-4" />
                 </button>

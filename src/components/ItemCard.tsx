@@ -1,7 +1,8 @@
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { Item } from '../types';
 import { motion } from 'motion/react';
-import { Pencil } from 'lucide-react';
+import { Pencil, Trash2 } from 'lucide-react';
 
 interface ItemCardProps {
   item: Item;
@@ -15,6 +16,13 @@ interface ItemCardProps {
 
 export default function ItemCard({ item, storeSlug, showStatus, onMarkSold, onMarkAvailable, onEdit, onDelete }: ItemCardProps) {
   const hasActions = onMarkSold || onMarkAvailable || onEdit || onDelete;
+
+  // Prevent click from bubbling to parent Link or motion container
+  const handle = (e: React.MouseEvent, fn?: () => void) => {
+    e.preventDefault();
+    e.stopPropagation();
+    fn?.();
+  };
 
   return (
     <motion.div
@@ -56,37 +64,41 @@ export default function ItemCard({ item, storeSlug, showStatus, onMarkSold, onMa
       </Link>
 
       {hasActions && (
-        <div className="px-3 pb-3 flex gap-2 flex-wrap">
+        <div className="px-2 pb-2 flex gap-1.5">
           {item.status === 'available' && onMarkSold && (
             <button
-              onClick={onMarkSold}
-              className="flex-1 py-1.5 text-xs font-bold uppercase bg-neon-green border-[3px] border-black brutal-shadow-small hover:translate-y-[-1px] transition-transform"
+              type="button"
+              onClick={(e) => handle(e, onMarkSold)}
+              className="flex-1 min-h-[44px] py-2 text-xs font-bold uppercase bg-neon-green border-[3px] border-black brutal-shadow-small active:translate-y-[1px] active:shadow-none transition-all"
             >
-              Mark Sold
+              Sold
             </button>
           )}
           {item.status === 'sold' && onMarkAvailable && (
             <button
-              onClick={onMarkAvailable}
-              className="flex-1 py-1.5 text-xs font-bold uppercase bg-blue-200 border-[3px] border-black brutal-shadow-small hover:translate-y-[-1px] transition-transform"
+              type="button"
+              onClick={(e) => handle(e, onMarkAvailable)}
+              className="flex-1 min-h-[44px] py-2 text-xs font-bold uppercase bg-blue-200 border-[3px] border-black brutal-shadow-small active:translate-y-[1px] active:shadow-none transition-all"
             >
               Relist
             </button>
           )}
           {onEdit && (
             <button
-              onClick={onEdit}
-              className="py-1.5 px-3 text-xs font-bold uppercase bg-white border-[3px] border-black brutal-shadow-small hover:translate-y-[-1px] transition-transform"
+              type="button"
+              onClick={(e) => handle(e, onEdit)}
+              className="min-h-[44px] min-w-[44px] flex items-center justify-center text-xs font-bold uppercase bg-white border-[3px] border-black brutal-shadow-small active:translate-y-[1px] active:shadow-none transition-all"
             >
-              <Pencil className="w-3 h-3" />
+              <Pencil className="w-3.5 h-3.5" />
             </button>
           )}
           {onDelete && (
             <button
-              onClick={onDelete}
-              className="py-1.5 px-3 text-xs font-bold uppercase bg-red-500 text-white border-[3px] border-black brutal-shadow-small hover:translate-y-[-1px] transition-transform"
+              type="button"
+              onClick={(e) => handle(e, onDelete)}
+              className="min-h-[44px] min-w-[44px] flex items-center justify-center text-xs font-bold uppercase bg-red-500 text-white border-[3px] border-black brutal-shadow-small active:translate-y-[1px] active:shadow-none transition-all"
             >
-              Del
+              <Trash2 className="w-3.5 h-3.5" />
             </button>
           )}
         </div>

@@ -107,7 +107,7 @@ export default function ReportModal({ open, onClose, type, targetId, targetLabel
                   </div>
                   <button
                     onClick={handleClose}
-                    className="p-1 border-[3px] border-black hover:bg-gray-100 transition-colors"
+                    className="p-2 border-[3px] border-black hover:bg-gray-100 transition-colors"
                   >
                     <X className="w-4 h-4" />
                   </button>

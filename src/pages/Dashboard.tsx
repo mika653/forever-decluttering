@@ -68,19 +68,34 @@ export default function Dashboard({ user }: DashboardProps) {
   }, [store?.slug]);
 
   const handleMarkSold = async (itemId: string) => {
-    await updateDoc(doc(db, 'items', itemId), { status: 'sold' });
-    setItems((prev) => prev.map((i) => i.id === itemId ? { ...i, status: 'sold' } : i));
+    try {
+      await updateDoc(doc(db, 'items', itemId), { status: 'sold' });
+      setItems((prev) => prev.map((i) => i.id === itemId ? { ...i, status: 'sold' } : i));
+    } catch (err) {
+      console.error('Mark sold error:', err);
+      alert('Failed to update. Please try again.');
+    }
   };
 
   const handleMarkAvailable = async (itemId: string) => {
-    await updateDoc(doc(db, 'items', itemId), { status: 'available' });
-    setItems((prev) => prev.map((i) => i.id === itemId ? { ...i, status: 'available' } : i));
+    try {
+      await updateDoc(doc(db, 'items', itemId), { status: 'available' });
+      setItems((prev) => prev.map((i) => i.id === itemId ? { ...i, status: 'available' } : i));
+    } catch (err) {
+      console.error('Relist error:', err);
+      alert('Failed to update. Please try again.');
+    }
   };
 
   const handleDelete = async (itemId: string) => {
-    if (!confirm('Delete this item?')) return;
-    await deleteDoc(doc(db, 'items', itemId));
-    setItems((prev) => prev.filter((i) => i.id !== itemId));
+    if (!window.confirm('Delete this item? This cannot be undone.')) return;
+    try {
+      await deleteDoc(doc(db, 'items', itemId));
+      setItems((prev) => prev.filter((i) => i.id !== itemId));
+    } catch (err) {
+      console.error('Delete error:', err);
+      alert('Failed to delete item. Please try again.');
+    }
   };
 
   const copyLink = async () => {

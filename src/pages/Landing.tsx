@@ -135,29 +135,12 @@ export default function Landing({ user }: LandingProps) {
                   <Link
                     key={`${store.slug}-${i}`}
                     to={`/${store.slug}`}
-                    className="flex-shrink-0 flex items-center gap-3 px-5 py-3 border-[3px] border-black brutal-shadow-small hover:translate-y-[-2px] transition-transform no-underline"
+                    className="flex-shrink-0 px-5 py-2.5 border-[3px] border-black brutal-shadow-small hover:translate-y-[-2px] transition-transform no-underline"
                     style={{ backgroundColor: color }}
                   >
-                    {store.photoURL ? (
-                      <img
-                        src={store.photoURL}
-                        alt={store.displayName}
-                        className="w-8 h-8 border-[2px] border-black object-cover"
-                        referrerPolicy="no-referrer"
-                      />
-                    ) : (
-                      <div
-                        className="w-8 h-8 border-[2px] border-black bg-white flex items-center justify-center font-display text-sm"
-                      >
-                        {store.displayName.charAt(0)}
-                      </div>
-                    )}
-                    <div>
-                      <p className="font-display text-sm text-white leading-none" style={{ textShadow: '1px 1px 0px rgba(0,0,0,0.3)' }}>
-                        {store.displayName}
-                      </p>
-                      <p className="mono text-[10px] text-white/80">/{store.slug}</p>
-                    </div>
+                    <span className="font-display text-sm text-white whitespace-nowrap" style={{ textShadow: '1px 1px 0px rgba(0,0,0,0.3)' }}>
+                      /{store.slug}
+                    </span>
                   </Link>
                 );
               })}

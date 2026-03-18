@@ -49,7 +49,7 @@ export default function Landing({ user }: LandingProps) {
           </span>
         </h1>
         <p className="mono text-lg text-gray-600 max-w-xl mx-auto mb-8">
-          Snap a photo. Set a price. Share your link. No marketplace drama, no buried posts, no small talk.
+          Add a photo. Set a price. Share your link. No marketplace drama, no buried posts, no small talk.
         </p>
         <button
           onClick={handleGetStarted}
@@ -67,7 +67,7 @@ export default function Landing({ user }: LandingProps) {
             icon: Camera,
             step: '01',
             title: 'Snap & Post',
-            description: 'Take a photo, AI fills in the details. Set your price. Done in 10 seconds.',
+            description: 'Add a photo, fill in the details, set your price. Done in under a minute.',
           },
           {
             icon: LinkIcon,

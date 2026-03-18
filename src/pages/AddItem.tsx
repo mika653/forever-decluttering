@@ -4,9 +4,8 @@ import { User } from 'firebase/auth';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { uploadItemImage } from '../lib/storage';
-import { analyzeItemPhoto, AISuggestion } from '../lib/gemini';
-import { Camera, Sparkles, Plus, X, Loader2 } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { Camera, Plus, X, Loader2 } from 'lucide-react';
+import { motion } from 'motion/react';
 
 interface AddItemProps {
   user: User;
@@ -23,41 +22,15 @@ export default function AddItem({ user, storeSlug }: AddItemProps) {
   const [description, setDescription] = useState('');
   const [condition, setCondition] = useState('Good');
   const [price, setPrice] = useState('');
-  const [analyzing, setAnalyzing] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [step, setStep] = useState<'photo' | 'details'>('photo');
 
-  const handlePhotoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
 
-    const newPhotos = [...photos, ...files].slice(0, 5); // max 5
+    const newPhotos = [...photos, ...files].slice(0, 5);
     setPhotos(newPhotos);
-
-    const newPreviews = newPhotos.map((file) => URL.createObjectURL(file));
-    setPhotoPreviews(newPreviews);
-
-    // Auto-analyze first photo with AI
-    const firstFile = files[0] as File | undefined;
-    if (photos.length === 0 && firstFile) {
-      setAnalyzing(true);
-      try {
-        const base64 = await fileToBase64(firstFile);
-        const suggestion = await analyzeItemPhoto(base64, firstFile.type);
-        applyAISuggestion(suggestion);
-      } catch (err) {
-        console.error('AI analysis failed', err);
-      } finally {
-        setAnalyzing(false);
-      }
-      setStep('details');
-    }
-  };
-
-  const applyAISuggestion = (suggestion: AISuggestion) => {
-    if (suggestion.title) setTitle(suggestion.title);
-    if (suggestion.description) setDescription(suggestion.description);
-    if (suggestion.condition) setCondition(suggestion.condition);
+    setPhotoPreviews(newPhotos.map((file) => URL.createObjectURL(file)));
   };
 
   const removePhoto = (index: number) => {
@@ -71,7 +44,6 @@ export default function AddItem({ user, storeSlug }: AddItemProps) {
 
     setSubmitting(true);
     try {
-      // Create item doc first to get ID
       const itemRef = await addDoc(collection(db, 'items'), {
         storeSlug,
         sellerId: user.uid,
@@ -79,17 +51,15 @@ export default function AddItem({ user, storeSlug }: AddItemProps) {
         description,
         price: parseFloat(price),
         condition,
-        images: [], // will update after upload
+        images: [],
         status: 'available',
         createdAt: serverTimestamp(),
       });
 
-      // Upload images
       const imageUrls = await Promise.all(
         photos.map((file) => uploadItemImage(storeSlug, itemRef.id, file))
       );
 
-      // Update item with image URLs
       const { updateDoc, doc } = await import('firebase/firestore');
       await updateDoc(doc(db, 'items', itemRef.id), { images: imageUrls });
 
@@ -109,7 +79,7 @@ export default function AddItem({ user, storeSlug }: AddItemProps) {
         className="border-[3px] border-black p-6 bg-white brutal-shadow"
       >
         <h1 className="text-3xl font-display mb-1">Add Item</h1>
-        <p className="mono text-sm text-gray-500 mb-6">Snap a photo, AI does the rest.</p>
+        <p className="mono text-sm text-gray-500 mb-6">Snap a photo, fill in the details, post.</p>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Photo Section */}
@@ -152,7 +122,7 @@ export default function AddItem({ user, storeSlug }: AddItemProps) {
                   <Camera className="w-8 h-8" />
                 </div>
                 <span className="mono text-sm font-bold uppercase text-gray-500">
-                  Tap to take a photo
+                  Tap to add a photo
                 </span>
               </button>
             )}
@@ -167,23 +137,8 @@ export default function AddItem({ user, storeSlug }: AddItemProps) {
             />
           </div>
 
-          {/* AI Analysis Indicator */}
-          <AnimatePresence>
-            {analyzing && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="flex items-center gap-2 p-3 bg-neon-pink/10 border-[3px] border-neon-pink"
-              >
-                <Sparkles className="w-4 h-4 text-neon-pink animate-pulse" />
-                <span className="mono text-sm font-bold">AI is analyzing your photo...</span>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
           {/* Details (shown after photo) */}
-          {(step === 'details' || photos.length > 0) && (
+          {photos.length > 0 && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -261,17 +216,4 @@ export default function AddItem({ user, storeSlug }: AddItemProps) {
       </motion.div>
     </div>
   );
-}
-
-function fileToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      // Remove the data:image/...;base64, prefix
-      resolve(result.split(',')[1]);
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
 }

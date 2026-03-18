@@ -3,9 +3,10 @@ import { useParams, Link } from 'react-router-dom';
 import { db } from '../firebase';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { Item, Store } from '../types';
-import { ArrowLeft, MessageCircle, ShoppingBag, ChevronLeft, ChevronRight, Copy, Check, X, ExternalLink } from 'lucide-react';
+import { ArrowLeft, MessageCircle, ShoppingBag, ChevronLeft, ChevronRight, Copy, Check, X, ExternalLink, BadgeCheck, Flag } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import LoadingAnimation from '../components/LoadingAnimation';
+import ReportModal from '../components/ReportModal';
 
 export default function ItemDetail() {
   const { slug, itemId } = useParams<{ slug: string; itemId: string }>();
@@ -21,6 +22,7 @@ export default function ItemDetail() {
   const [copiedMessage, setCopiedMessage] = useState(false);
   const [copiedNumber, setCopiedNumber] = useState(false);
   const [activeQRTab, setActiveQRTab] = useState(0);
+  const [showReport, setShowReport] = useState(false);
 
   useEffect(() => {
     if (!itemId || !slug) return;
@@ -170,9 +172,14 @@ export default function ItemDetail() {
             </p>
 
             <div className="border-t-[3px] border-black pt-4 mt-auto">
-              <p className="mono text-xs text-gray-400 uppercase font-bold mb-1">
-                Sold by {store.displayName}
-              </p>
+              <div className="flex items-center gap-1.5 mb-1">
+                <p className="mono text-xs text-gray-400 uppercase font-bold">
+                  Sold by {store.displayName}
+                </p>
+                {store.verified && (
+                  <BadgeCheck className="w-4 h-4 text-neon-green flex-shrink-0" />
+                )}
+              </div>
               {store.paymentMethods && store.paymentMethods.length > 0 && (
                 <div className="flex gap-1 mb-4">
                   {store.paymentMethods.map((method) => (
@@ -212,6 +219,25 @@ export default function ItemDetail() {
           </div>
         </div>
       </div>
+
+      {/* Report button */}
+      <div className="mt-6 text-center">
+        <button
+          onClick={() => setShowReport(true)}
+          className="inline-flex items-center gap-1.5 mono text-xs text-gray-400 hover:text-red-500 transition-colors"
+        >
+          <Flag className="w-3 h-3" />
+          Report this item
+        </button>
+      </div>
+
+      <ReportModal
+        open={showReport}
+        onClose={() => setShowReport(false)}
+        type="item"
+        targetId={itemId!}
+        targetLabel={item.title}
+      />
 
       {/* Contact Modal */}
       <AnimatePresence>

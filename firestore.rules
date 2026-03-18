@@ -56,6 +56,21 @@ service cloud.firestore {
       allow delete: if isOwner(resource.data.sellerId);
     }
 
+    // ===============================================================
+    // Reports
+    // ===============================================================
+    match /reports/{reportId} {
+      // Anyone can create a report (no auth required for buyer safety)
+      allow create: if true
+        && request.resource.data.type in ['store', 'item']
+        && request.resource.data.targetId is string
+        && request.resource.data.reason is string;
+
+      // Only admins can read/update/delete reports (handled by admin check in app)
+      allow read: if isAuthenticated();
+      allow update, delete: if isAuthenticated();
+    }
+
     // Default deny
     match /{path=**} {
       allow read, write: if false;

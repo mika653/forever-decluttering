@@ -13,6 +13,18 @@ export interface Store {
   paymentQRs?: { label: string; url: string }[];
   couriers?: string[];
   suspended?: boolean;
+  verified?: boolean;
+  createdAt: Timestamp;
+}
+
+export interface Report {
+  id: string;
+  type: 'store' | 'item';
+  targetId: string;       // store slug or item id
+  targetLabel: string;    // display name or item title
+  reason: string;
+  details?: string;
+  reporterContact?: string;
   createdAt: Timestamp;
 }
 

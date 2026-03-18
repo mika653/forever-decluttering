@@ -5,8 +5,9 @@ import { collection, query, where, getDocs } from 'firebase/firestore';
 import { Store, Item } from '../types';
 import StoreHeader from '../components/StoreHeader';
 import ItemCard from '../components/ItemCard';
-import { Package, Search, Ban } from 'lucide-react';
+import { Package, Search, Ban, Flag } from 'lucide-react';
 import LoadingAnimation from '../components/LoadingAnimation';
+import ReportModal from '../components/ReportModal';
 
 interface StorePageProps {
   defaultSlug?: string;
@@ -21,6 +22,7 @@ export default function StorePage({ defaultSlug }: StorePageProps = {}) {
   const [notFound, setNotFound] = useState(false);
   const [error, setError] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showReport, setShowReport] = useState(false);
 
   useEffect(() => {
     if (!slug) return;
@@ -160,6 +162,25 @@ export default function StorePage({ defaultSlug }: StorePageProps = {}) {
           </p>
         </div>
       )}
+
+      {/* Report button */}
+      <div className="mt-12 text-center">
+        <button
+          onClick={() => setShowReport(true)}
+          className="inline-flex items-center gap-1.5 mono text-xs text-gray-400 hover:text-red-500 transition-colors"
+        >
+          <Flag className="w-3 h-3" />
+          Report this store
+        </button>
+      </div>
+
+      <ReportModal
+        open={showReport}
+        onClose={() => setShowReport(false)}
+        type="store"
+        targetId={store.slug}
+        targetLabel={store.displayName}
+      />
     </div>
   );
 }

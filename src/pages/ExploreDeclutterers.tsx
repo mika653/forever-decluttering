@@ -5,7 +5,7 @@ import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Store } from '../types';
 import LoadingAnimation from '../components/LoadingAnimation';
-import { Users, ArrowRight, Package } from 'lucide-react';
+import { Users, ArrowRight, Package, BadgeCheck } from 'lucide-react';
 
 interface StoreWithCount extends Store {
   itemCount: number;
@@ -124,9 +124,14 @@ export default function ExploreDeclutterers() {
                     </div>
                   )}
                   <div className="min-w-0">
-                    <h2 className="font-display text-lg tracking-tight truncate">
-                      {store.displayName}
-                    </h2>
+                    <div className="flex items-center gap-1.5">
+                      <h2 className="font-display text-lg tracking-tight truncate">
+                        {store.displayName}
+                      </h2>
+                      {store.verified && (
+                        <BadgeCheck className="w-4 h-4 text-neon-green flex-shrink-0" />
+                      )}
+                    </div>
                     <p className="mono text-xs text-gray-400 uppercase">
                       @{store.slug}
                     </p>

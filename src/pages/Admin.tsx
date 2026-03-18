@@ -7,7 +7,7 @@ import {
   updateDoc,
   doc,
 } from 'firebase/firestore';
-import { Store, Item } from '../types';
+import { Store, Item, Report } from '../types';
 import {
   Shield,
   Trash2,
@@ -18,15 +18,19 @@ import {
   ShoppingBag,
   CheckCircle,
   Store as StoreIcon,
+  BadgeCheck,
+  Flag,
+  AlertTriangle,
 } from 'lucide-react';
 import LoadingAnimation from '../components/LoadingAnimation';
 
-type Tab = 'listings' | 'stores';
+type Tab = 'listings' | 'stores' | 'reports';
 
 export default function Admin() {
   const [tab, setTab] = useState<Tab>('listings');
   const [items, setItems] = useState<Item[]>([]);
   const [stores, setStores] = useState<(Store & { docId: string })[]>([]);
+  const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'available' | 'sold'>('all');
@@ -34,9 +38,10 @@ export default function Admin() {
   useEffect(() => {
     const fetchAll = async () => {
       try {
-        const [itemsSnap, storesSnap] = await Promise.all([
+        const [itemsSnap, storesSnap, reportsSnap] = await Promise.all([
           getDocs(collection(db, 'items')),
           getDocs(collection(db, 'stores')),
+          getDocs(collection(db, 'reports')),
         ]);
 
         const itemsData = itemsSnap.docs
@@ -47,8 +52,13 @@ export default function Admin() {
           .map((d) => ({ docId: d.id, ...d.data() } as Store & { docId: string }))
           .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
 
+        const reportsData = reportsSnap.docs
+          .map((d) => ({ id: d.id, ...d.data() } as Report))
+          .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+
         setItems(itemsData);
         setStores(storesData);
+        setReports(reportsData);
       } catch (err) {
         console.error('Error fetching admin data:', err);
       } finally {
@@ -83,6 +93,32 @@ export default function Admin() {
     } catch (err) {
       console.error('Error updating store:', err);
       alert(`Failed to ${action} store.`);
+    }
+  };
+
+  const handleToggleVerified = async (store: Store & { docId: string }) => {
+    const newVerified = !store.verified;
+    try {
+      await updateDoc(doc(db, 'stores', store.docId), { verified: newVerified });
+      setStores((prev) =>
+        prev.map((s) =>
+          s.docId === store.docId ? { ...s, verified: newVerified } : s
+        )
+      );
+    } catch (err) {
+      console.error('Error updating store:', err);
+      alert('Failed to update verification status.');
+    }
+  };
+
+  const handleDismissReport = async (reportId: string) => {
+    if (!confirm('Dismiss this report?')) return;
+    try {
+      await deleteDoc(doc(db, 'reports', reportId));
+      setReports((prev) => prev.filter((r) => r.id !== reportId));
+    } catch (err) {
+      console.error('Error dismissing report:', err);
+      alert('Failed to dismiss report.');
     }
   };
 
@@ -156,16 +192,20 @@ export default function Admin() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 mb-6">
-        {(['listings', 'stores'] as const).map((t) => (
+      <div className="flex gap-2 mb-6 overflow-x-auto">
+        {([
+          { key: 'listings' as const, label: `Listings (${totalItems})` },
+          { key: 'stores' as const, label: `Stores (${stores.length})` },
+          { key: 'reports' as const, label: `Reports (${reports.length})` },
+        ]).map(({ key, label }) => (
           <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={`px-4 py-2 text-xs font-bold uppercase border-[3px] border-black brutal-shadow-small transition-colors mono ${
-              tab === t ? 'bg-neon-pink' : 'bg-white hover:bg-gray-100'
-            }`}
+            key={key}
+            onClick={() => setTab(key)}
+            className={`px-4 py-2 text-xs font-bold uppercase border-[3px] border-black brutal-shadow-small transition-colors mono whitespace-nowrap ${
+              tab === key ? 'bg-neon-pink' : 'bg-white hover:bg-gray-100'
+            } ${key === 'reports' && reports.length > 0 && tab !== 'reports' ? 'border-red-500' : ''}`}
           >
-            {t === 'listings' ? `All Listings (${totalItems})` : `All Stores (${stores.length})`}
+            {label}
           </button>
         ))}
       </div>
@@ -302,6 +342,11 @@ export default function Admin() {
                     <span className="mono text-xs bg-gray-100 border-[2px] border-black px-2 py-0.5">
                       /{store.slug}
                     </span>
+                    {store.verified && (
+                      <span className="mono text-xs font-bold uppercase px-2 py-0.5 border-[2px] border-black bg-neon-green flex items-center gap-1">
+                        <BadgeCheck className="w-3 h-3" /> Verified
+                      </span>
+                    )}
                     {store.suspended && (
                       <span className="mono text-xs font-bold uppercase px-2 py-0.5 border-[2px] border-black bg-red-400 text-white">
                         Suspended
@@ -326,6 +371,18 @@ export default function Admin() {
                     <Eye className="w-3.5 h-3.5" />
                   </a>
                   <button
+                    onClick={() => handleToggleVerified(store)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 border-[2px] border-black mono text-xs font-bold uppercase transition-colors ${
+                      store.verified
+                        ? 'bg-neon-green hover:bg-green-300'
+                        : 'bg-gray-100 hover:bg-gray-200'
+                    }`}
+                    title={store.verified ? 'Remove verification' : 'Verify store'}
+                  >
+                    <BadgeCheck className="w-3.5 h-3.5" />
+                    {store.verified ? 'Verified' : 'Verify'}
+                  </button>
+                  <button
                     onClick={() => handleToggleSuspend(store)}
                     className={`flex items-center gap-1.5 px-3 py-1.5 border-[2px] border-black mono text-xs font-bold uppercase transition-colors ${
                       store.suspended
@@ -347,6 +404,75 @@ export default function Admin() {
               <StoreIcon className="w-10 h-10 mx-auto mb-2 text-gray-300" />
               <p className="mono text-sm text-gray-400">No stores found</p>
             </div>
+          )}
+        </div>
+      )}
+
+      {/* Reports Tab */}
+      {tab === 'reports' && (
+        <div className="space-y-3">
+          {reports.length === 0 ? (
+            <div className="border-[3px] border-dashed border-black p-12 text-center">
+              <Flag className="w-10 h-10 mx-auto mb-2 text-gray-300" />
+              <p className="mono text-sm text-gray-400">No reports yet</p>
+            </div>
+          ) : (
+            reports.map((report) => (
+              <div
+                key={report.id}
+                className="border-[3px] border-black brutal-shadow-small p-4 bg-white"
+              >
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap mb-2">
+                      <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0" />
+                      <span className={`mono text-xs font-bold uppercase px-2 py-0.5 border-[2px] border-black ${
+                        report.type === 'store' ? 'bg-blue-100' : 'bg-purple-100'
+                      }`}>
+                        {report.type}
+                      </span>
+                      <span className="font-display text-sm truncate">
+                        {report.targetLabel}
+                      </span>
+                    </div>
+                    <div className="border-l-[3px] border-red-300 pl-3 mb-2">
+                      <p className="mono text-sm font-bold">{report.reason}</p>
+                      {report.details && (
+                        <p className="mono text-sm text-gray-500 mt-1">{report.details}</p>
+                      )}
+                    </div>
+                    <div className="mono text-xs text-gray-400 flex flex-wrap gap-3">
+                      <span>{formatDate(report.createdAt)}</span>
+                      {report.reporterContact && (
+                        <span>Contact: {report.reporterContact}</span>
+                      )}
+                      <span>ID: {report.targetId.slice(0, 12)}...</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    {report.type === 'store' && (
+                      <a
+                        href={`/${report.targetId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2 border-[2px] border-black bg-white hover:bg-gray-100 transition-colors"
+                        title="View store"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                      </a>
+                    )}
+                    <button
+                      onClick={() => handleDismissReport(report.id)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 border-[2px] border-black mono text-xs font-bold uppercase bg-gray-100 hover:bg-gray-200 transition-colors"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      Dismiss
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))
           )}
         </div>
       )}

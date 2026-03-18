@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Store } from '../types';
-import { Share2, Check } from 'lucide-react';
+import { Share2, Check, BadgeCheck } from 'lucide-react';
 
 interface StoreHeaderProps {
   store: Store;
@@ -48,9 +48,14 @@ export default function StoreHeader({ store, itemCount }: StoreHeaderProps) {
           </div>
         )}
         <div className="flex-1">
-          <h1 className="text-2xl sm:text-3xl font-display leading-none tracking-tighter">
-            {store.displayName}
-          </h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl sm:text-3xl font-display leading-none tracking-tighter">
+              {store.displayName}
+            </h1>
+            {store.verified && (
+              <BadgeCheck className="w-5 h-5 sm:w-6 sm:h-6 text-neon-green flex-shrink-0" />
+            )}
+          </div>
           {store.bio && (
             <p className="mono text-sm text-gray-500 mt-1">{store.bio}</p>
           )}

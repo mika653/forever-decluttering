@@ -49,22 +49,32 @@ export default function ItemDetail() {
     );
   }
 
-  const buildContactUrl = () => {
+  const handleContact = () => {
+    if (!store.contactNumber) return;
+
     const itemUrl = `${window.location.origin}/${slug}/${itemId}`;
     const message = `Hi! I'm interested in your "${item.title}" for ₱${item.price} on Forever Decluttering.\n\n${itemUrl}`;
+    const cleanNumber = store.contactNumber.replace(/\D/g, '');
 
+    let url: string;
     switch (store.contactMethod) {
       case 'WhatsApp':
-        return `https://wa.me/${store.contactNumber.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
+        url = `https://wa.me/${cleanNumber}?text=${encodeURIComponent(message)}`;
+        break;
       case 'Viber':
-        return `viber://chat?number=${store.contactNumber.replace(/\D/g, '')}&text=${encodeURIComponent(message)}`;
+        url = `viber://chat?number=%2B${cleanNumber}`;
+        break;
       case 'SMS':
-        return `sms:${store.contactNumber}?body=${encodeURIComponent(message)}`;
+        url = `sms:${store.contactNumber}?body=${encodeURIComponent(message)}`;
+        break;
       case 'Messenger':
-        return `https://m.me/${store.contactNumber}`;
+        url = `https://m.me/${store.contactNumber}`;
+        break;
       default:
-        return '#';
+        return;
     }
+
+    window.open(url, '_blank');
   };
 
   const hasMultipleImages = item.images.length > 1;
@@ -160,15 +170,13 @@ export default function ItemDetail() {
               )}
 
               {item.status === 'available' ? (
-                <a
-                  href={buildContactUrl()}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 w-full py-4 bg-black text-white font-display text-xl hover:bg-neon-pink hover:text-black transition-all brutal-shadow border-[3px] border-black"
+                <button
+                  onClick={handleContact}
+                  className="flex items-center justify-center gap-2 w-full py-4 bg-black text-white font-display text-xl hover:bg-neon-pink hover:text-black transition-all brutal-shadow border-[3px] border-black cursor-pointer"
                 >
                   <MessageCircle className="w-5 h-5" />
                   I Want This
-                </a>
+                </button>
               ) : (
                 <div className="w-full py-4 bg-gray-200 text-gray-500 font-display text-xl text-center border-[3px] border-gray-300">
                   SOLD

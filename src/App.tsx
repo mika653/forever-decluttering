@@ -10,8 +10,9 @@ import Dashboard from './pages/Dashboard';
 import AddItem from './pages/AddItem';
 import StoreSetup from './pages/StoreSetup';
 import ExploreDeclutterers from './pages/ExploreDeclutterers';
+import Admin from './pages/Admin';
 import { db } from './firebase';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import LoadingAnimation from './components/LoadingAnimation';
 
 // The default store slug shown at the root URL
@@ -19,6 +20,34 @@ const DEFAULT_STORE_SLUG = 'mika';
 
 function AuthGuard({ user, children }: { user: User | null; children: React.ReactNode }) {
   if (!user) return <Navigate to="/start" replace />;
+  return <>{children}</>;
+}
+
+function AdminGuard({ user, children }: { user: User | null; children: React.ReactNode }) {
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [checking, setChecking] = useState(true);
+
+  useEffect(() => {
+    if (!user) {
+      setChecking(false);
+      return;
+    }
+    const checkAdmin = async () => {
+      try {
+        const storeDoc = await getDoc(doc(db, 'stores', 'mika'));
+        if (storeDoc.exists() && storeDoc.data().ownerId === user.uid) {
+          setIsAdmin(true);
+        }
+      } catch (err) {
+        console.error('Admin check failed:', err);
+      }
+      setChecking(false);
+    };
+    checkAdmin();
+  }, [user]);
+
+  if (checking) return <LoadingAnimation />;
+  if (!isAdmin) return <Navigate to="/" replace />;
   return <>{children}</>;
 }
 
@@ -100,6 +129,16 @@ export default function App() {
                 <AuthGuard user={user}>
                   <StoreSetup user={user!} />
                 </AuthGuard>
+              }
+            />
+
+            {/* Admin */}
+            <Route
+              path="/admin"
+              element={
+                <AdminGuard user={user}>
+                  <Admin />
+                </AdminGuard>
               }
             />
 

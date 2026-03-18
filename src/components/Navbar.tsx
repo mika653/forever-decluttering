@@ -3,7 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { auth, db } from '../firebase';
 import { signInWithPopup, GoogleAuthProvider, signOut, User } from 'firebase/auth';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { Package, LogIn, LogOut, LayoutDashboard, Store, Users } from 'lucide-react';
+import { Package, LogIn, LogOut, LayoutDashboard, Store, Users, Shield } from 'lucide-react';
+import { doc, getDoc } from 'firebase/firestore';
 
 interface NavbarProps {
   user: User | null;
@@ -12,11 +13,13 @@ interface NavbarProps {
 export default function Navbar({ user }: NavbarProps) {
   const navigate = useNavigate();
   const [userSlug, setUserSlug] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   // Fetch the signed-in user's store slug
   useEffect(() => {
     if (!user) {
       setUserSlug(null);
+      setIsAdmin(false);
       return;
     }
 
@@ -27,7 +30,20 @@ export default function Navbar({ user }: NavbarProps) {
         setUserSlug(snapshot.docs[0].data().slug);
       }
     };
+
+    const checkAdmin = async () => {
+      try {
+        const storeDoc = await getDoc(doc(db, 'stores', 'mika'));
+        if (storeDoc.exists() && storeDoc.data().ownerId === user.uid) {
+          setIsAdmin(true);
+        }
+      } catch {
+        // ignore
+      }
+    };
+
     fetchSlug();
+    checkAdmin();
   }, [user?.uid]);
 
   const handleLogin = async () => {
@@ -81,6 +97,16 @@ export default function Navbar({ user }: NavbarProps) {
                 >
                   <Store className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">My Store</span>
+                </button>
+              )}
+              {/* Admin link - desktop only */}
+              {isAdmin && (
+                <button
+                  onClick={() => navigate('/admin')}
+                  className="hidden sm:flex items-center gap-2 p-2 border-[3px] border-black brutal-shadow-small bg-white hover:bg-neon-pink transition-colors"
+                  title="Admin Panel"
+                >
+                  <Shield className="w-3.5 h-3.5" />
                 </button>
               )}
               <button

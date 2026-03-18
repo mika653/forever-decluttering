@@ -5,7 +5,7 @@ import { collection, query, where, getDocs } from 'firebase/firestore';
 import { Store, Item } from '../types';
 import StoreHeader from '../components/StoreHeader';
 import ItemCard from '../components/ItemCard';
-import { Package, Search } from 'lucide-react';
+import { Package, Search, Ban } from 'lucide-react';
 import LoadingAnimation from '../components/LoadingAnimation';
 
 interface StorePageProps {
@@ -86,6 +86,20 @@ export default function StorePage({ defaultSlug }: StorePageProps = {}) {
   }
 
   if (!store) return null;
+
+  if (store.suspended) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-20 text-center">
+        <div className="border-[3px] border-black p-12 bg-white brutal-shadow">
+          <Ban className="w-16 h-16 mx-auto mb-4 text-red-400" />
+          <h1 className="text-4xl font-display mb-2">Store Suspended</h1>
+          <p className="mono text-sm text-gray-500">
+            This store has been suspended and is not currently available.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">

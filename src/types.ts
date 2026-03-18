@@ -11,6 +11,7 @@ export interface Store {
   paymentMethods?: string[];
   paymentQR?: string;
   couriers?: string[];
+  suspended?: boolean;
   createdAt: Timestamp;
 }
 

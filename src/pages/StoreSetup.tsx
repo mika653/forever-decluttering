@@ -174,8 +174,9 @@ export default function StoreSetup({ user }: StoreSetupProps) {
           <div>
             <label className="mono text-xs font-bold uppercase block mb-1">Your Link</label>
             <div className="flex items-center">
-              <span className="mono text-sm text-gray-400 bg-gray-100 border-[3px] border-r-0 border-black px-3 py-2.5">
-                forever-decluttering.app/
+              <span className="mono text-xs sm:text-sm text-gray-400 bg-gray-100 border-[3px] border-r-0 border-black px-2 sm:px-3 py-2.5 whitespace-nowrap">
+                <span className="hidden sm:inline">forever-decluttering.app/</span>
+                <span className="sm:hidden">f-d.app/</span>
               </span>
               <input
                 type="text"

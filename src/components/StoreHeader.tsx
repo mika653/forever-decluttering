@@ -22,15 +22,15 @@ export default function StoreHeader({ store, itemCount }: StoreHeaderProps) {
           </div>
         )}
         <div className="flex-1">
-          <h1 className="text-3xl font-display leading-none tracking-tighter">
+          <h1 className="text-2xl sm:text-3xl font-display leading-none tracking-tighter">
             {store.displayName}
           </h1>
           {store.bio && (
             <p className="mono text-sm text-gray-500 mt-1">{store.bio}</p>
           )}
-          <div className="flex items-center gap-3 mt-2">
+          <div className="flex flex-wrap items-center gap-3 mt-2">
             {store.paymentMethods && store.paymentMethods.length > 0 && (
-              <div className="flex gap-1">
+              <div className="flex flex-wrap gap-1">
                 {store.paymentMethods.map((method) => (
                   <span
                     key={method}

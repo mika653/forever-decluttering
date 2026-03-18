@@ -158,10 +158,10 @@ export default function ItemDetail() {
                 {item.condition}
               </span>
             )}
-            <h1 className="text-3xl font-display leading-none tracking-tighter mb-2">
+            <h1 className="text-2xl sm:text-3xl font-display leading-none tracking-tighter mb-2">
               {item.title}
             </h1>
-            <p className="text-4xl font-display text-neon-pink mb-4" style={{ WebkitTextStroke: '1px black' }}>
+            <p className="text-3xl sm:text-4xl font-display text-neon-pink mb-4" style={{ WebkitTextStroke: '1px black' }}>
               ₱{item.price}
             </p>
             <p className="mono text-sm text-gray-600 mb-6 whitespace-pre-line">
@@ -186,17 +186,17 @@ export default function ItemDetail() {
               )}
 
               {item.status === 'available' ? (
-                <div className="flex gap-2">
+                <div className="flex flex-col min-[360px]:flex-row gap-2">
                   <button
                     onClick={() => setShowContact(true)}
-                    className="flex items-center justify-center gap-2 flex-1 py-4 bg-black text-white font-display text-lg hover:bg-gray-800 transition-all brutal-shadow border-[3px] border-black cursor-pointer"
+                    className="flex items-center justify-center gap-2 flex-1 py-3 sm:py-4 bg-black text-white font-display text-base sm:text-lg hover:bg-gray-800 transition-all brutal-shadow border-[3px] border-black cursor-pointer"
                   >
                     <MessageCircle className="w-5 h-5" />
                     I Want This
                   </button>
                   <button
                     onClick={() => setShowBuyNow(true)}
-                    className="flex items-center justify-center gap-2 flex-1 py-4 bg-neon-pink text-black font-display text-lg hover:brightness-110 transition-all brutal-shadow border-[3px] border-black cursor-pointer"
+                    className="flex items-center justify-center gap-2 flex-1 py-3 sm:py-4 bg-neon-pink text-black font-display text-base sm:text-lg hover:brightness-110 transition-all brutal-shadow border-[3px] border-black cursor-pointer"
                   >
                     <ShoppingBag className="w-5 h-5" />
                     Buy Now
@@ -231,7 +231,7 @@ export default function ItemDetail() {
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t-[3px] border-black p-6 max-h-[80vh] overflow-y-auto"
+              className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t-[3px] border-black px-4 sm:px-6 pt-4 pb-6 max-h-[80vh] overflow-y-auto"
             >
               {/* Handle bar */}
               <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-4" />
@@ -311,7 +311,7 @@ export default function ItemDetail() {
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t-[3px] border-black p-6 max-h-[85vh] overflow-y-auto"
+              className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t-[3px] border-black px-4 sm:px-6 pt-4 pb-6 max-h-[85vh] overflow-y-auto"
             >
               <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-4" />
 

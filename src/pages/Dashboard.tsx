@@ -101,29 +101,29 @@ export default function Dashboard({ user }: DashboardProps) {
       {/* Dashboard Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-4xl font-display leading-none tracking-tighter">Dashboard</h1>
+          <h1 className="text-3xl sm:text-4xl font-display leading-none tracking-tighter">Dashboard</h1>
           <p className="mono text-sm text-gray-500 mt-1">
             {availableCount} active &middot; {soldCount} sold
           </p>
         </div>
 
-        <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
           {/* Copy Link */}
           <button
             onClick={copyLink}
-            className="flex items-center gap-2 px-4 py-2 border-[3px] border-black brutal-shadow-small bg-white hover:bg-neon-green/20 transition-colors mono text-xs font-bold uppercase"
+            className="flex items-center gap-2 px-2 sm:px-4 py-2 border-[3px] border-black brutal-shadow-small bg-white hover:bg-neon-green/20 transition-colors mono text-xs font-bold uppercase"
           >
             {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-            {copied ? 'Copied!' : `/${store.slug}`}
+            <span className="hidden sm:inline">{copied ? 'Copied!' : `/${store.slug}`}</span>
           </button>
 
           {/* View Store */}
           <button
             onClick={() => navigate(`/${store.slug}`)}
-            className="flex items-center gap-2 px-4 py-2 border-[3px] border-black brutal-shadow-small bg-white hover:bg-gray-100 transition-colors mono text-xs font-bold uppercase"
+            className="flex items-center gap-2 p-2 sm:px-4 sm:py-2 border-[3px] border-black brutal-shadow-small bg-white hover:bg-gray-100 transition-colors mono text-xs font-bold uppercase"
           >
             <ExternalLink className="w-3.5 h-3.5" />
-            View Store
+            <span className="hidden sm:inline">View Store</span>
           </button>
 
           {/* Settings */}
@@ -134,10 +134,10 @@ export default function Dashboard({ user }: DashboardProps) {
             <Settings className="w-4 h-4" />
           </button>
 
-          {/* Add Item */}
+          {/* Add Item - hidden on mobile since FAB exists */}
           <button
             onClick={() => navigate('/dashboard/add')}
-            className="flex items-center gap-2 px-5 py-2 brutal-btn brutal-btn-pink font-display text-sm"
+            className="hidden sm:flex items-center gap-2 px-5 py-2 brutal-btn brutal-btn-pink font-display text-sm"
           >
             <Plus className="w-4 h-4" />
             Add Item
@@ -146,12 +146,12 @@ export default function Dashboard({ user }: DashboardProps) {
       </div>
 
       {/* Filters */}
-      <div className="flex gap-2 mb-6">
+      <div className="flex gap-2 mb-6 overflow-x-auto">
         {(['all', 'available', 'sold'] as const).map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
-            className={`px-3 py-1.5 text-xs font-bold uppercase border-[3px] border-black brutal-shadow-small transition-colors ${
+            className={`px-3 py-1.5 text-xs font-bold uppercase border-[3px] border-black brutal-shadow-small transition-colors whitespace-nowrap ${
               filter === f ? 'bg-neon-pink' : 'bg-white hover:bg-gray-100'
             }`}
           >

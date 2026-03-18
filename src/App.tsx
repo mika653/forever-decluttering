@@ -135,16 +135,16 @@ function Footer() {
           </span>
           <span className="mono text-xs font-bold text-[#E0218A]">heymika</span>
         </a>
-        <div className="flex flex-col md:flex-row items-center gap-4">
+        <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 text-center">
           <a
             href="/explore"
-            className="mono text-sm font-bold uppercase text-neon-pink hover:text-black transition-colors border-b-2 border-neon-pink hover:border-black"
+            className="mono text-xs sm:text-sm font-bold uppercase text-neon-pink hover:text-black transition-colors border-b-2 border-neon-pink hover:border-black"
           >
             Explore Declutterers &rarr;
           </a>
           <a
             href="/start"
-            className="mono text-sm font-bold uppercase text-gray-400 hover:text-black transition-colors border-b-2 border-gray-300 hover:border-black"
+            className="mono text-xs sm:text-sm font-bold uppercase text-gray-400 hover:text-black transition-colors border-b-2 border-gray-300 hover:border-black"
           >
             Want to declutter too? Get your own link &rarr;
           </a>

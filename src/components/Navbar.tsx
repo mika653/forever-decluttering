@@ -56,19 +56,19 @@ export default function Navbar({ user }: NavbarProps) {
           <div className="bg-neon-pink p-1.5 border-[3px] border-black brutal-shadow-small">
             <Package className="w-5 h-5" />
           </div>
-          <span className="text-xl font-display tracking-tighter">
+          <span className="hidden sm:inline text-xl font-display tracking-tighter">
             Forever <span className="text-neon-pink">Decluttering</span>
           </span>
         </Link>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-3">
           {/* Explore link */}
           <Link
             to="/explore"
-            className="flex items-center gap-2 px-3 py-2 border-[3px] border-black brutal-shadow-small bg-white hover:bg-gray-100 transition-colors mono text-xs font-bold uppercase"
+            className="flex items-center gap-2 p-2 sm:px-3 sm:py-2 border-[3px] border-black brutal-shadow-small bg-white hover:bg-gray-100 transition-colors mono text-xs font-bold uppercase"
           >
             <Users className="w-3.5 h-3.5" />
-            Explore
+            <span className="hidden sm:inline">Explore</span>
           </Link>
 
           {user ? (
@@ -77,18 +77,18 @@ export default function Navbar({ user }: NavbarProps) {
               {userSlug && (
                 <button
                   onClick={() => navigate(`/${userSlug}`)}
-                  className="flex items-center gap-2 px-3 py-2 border-[3px] border-black brutal-shadow-small bg-white hover:bg-gray-100 transition-colors mono text-xs font-bold uppercase"
+                  className="flex items-center gap-2 p-2 sm:px-3 sm:py-2 border-[3px] border-black brutal-shadow-small bg-white hover:bg-gray-100 transition-colors mono text-xs font-bold uppercase"
                 >
                   <Store className="w-3.5 h-3.5" />
-                  My Store
+                  <span className="hidden sm:inline">My Store</span>
                 </button>
               )}
               <button
                 onClick={() => navigate('/dashboard')}
-                className="flex items-center gap-2 px-4 py-2 brutal-btn brutal-btn-pink font-display text-sm"
+                className="flex items-center gap-2 p-2 sm:px-4 sm:py-2 brutal-btn brutal-btn-pink font-display text-sm"
               >
                 <LayoutDashboard className="w-4 h-4" />
-                Dashboard
+                <span className="hidden sm:inline">Dashboard</span>
               </button>
               <button
                 onClick={() => signOut(auth)}

@@ -57,17 +57,22 @@ export default function ItemDetail() {
   const prefilledMessage = `Hi! I'm interested in your "${item.title}" for ₱${item.price} on Forever Decluttering.\n\n${itemUrl}`;
   const cleanNumber = store.contactNumber?.replace(/\D/g, '') || '';
 
-  const getDeepLink = () => {
+  // Only return HTTPS-based links that browsers handle safely.
+  // Protocol links (viber://, sms:) can cause SSL errors on some browsers.
+  const getWebLink = (): { url: string; label: string } | null => {
     switch (store.contactMethod) {
       case 'WhatsApp':
-        return `https://wa.me/${cleanNumber}?text=${encodeURIComponent(prefilledMessage)}`;
-      case 'Viber':
-        return `viber://chat?number=%2B${cleanNumber}`;
-      case 'SMS':
-        return `sms:${store.contactNumber}?body=${encodeURIComponent(prefilledMessage)}`;
+        return {
+          url: `https://wa.me/${cleanNumber}?text=${encodeURIComponent(prefilledMessage)}`,
+          label: 'Open WhatsApp',
+        };
       case 'Messenger':
-        return `https://m.me/${store.contactNumber}`;
+        return {
+          url: `https://m.me/${store.contactNumber}`,
+          label: 'Open Messenger',
+        };
       default:
+        // Viber and SMS: no reliable web link — user copies number instead
         return null;
     }
   };
@@ -82,13 +87,6 @@ export default function ItemDetail() {
     await navigator.clipboard.writeText(store.contactNumber);
     setCopiedNumber(true);
     setTimeout(() => setCopiedNumber(false), 2000);
-  };
-
-  const handleOpenApp = () => {
-    const link = getDeepLink();
-    if (link) {
-      window.location.href = link;
-    }
   };
 
   const hasMultipleImages = item.images.length > 1;
@@ -264,15 +262,17 @@ export default function ItemDetail() {
                 </button>
               </div>
 
-              {/* Open App Button */}
-              {getDeepLink() && (
-                <button
-                  onClick={handleOpenApp}
+              {/* Open App Link — only for HTTPS-based links (WhatsApp, Messenger) */}
+              {getWebLink() && (
+                <a
+                  href={getWebLink()!.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 w-full py-4 bg-black text-white font-display text-lg hover:bg-neon-pink hover:text-black transition-all brutal-shadow border-[3px] border-black cursor-pointer mb-3"
                 >
                   <ExternalLink className="w-5 h-5" />
-                  Open {store.contactMethod}
-                </button>
+                  {getWebLink()!.label}
+                </a>
               )}
 
               <p className="mono text-[10px] text-gray-400 text-center">

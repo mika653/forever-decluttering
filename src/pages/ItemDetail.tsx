@@ -321,9 +321,8 @@ export default function ItemDetail() {
                 <a
                   key={idx}
                   href={link.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`flex items-center justify-center gap-2 w-full py-4 font-display text-lg transition-all brutal-shadow border-[3px] border-black cursor-pointer mb-3 no-underline ${
+                  {...(!isMobile ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                  className={`flex items-center justify-center gap-2 w-full min-h-[48px] py-4 font-display text-lg transition-all brutal-shadow border-[3px] border-black cursor-pointer mb-3 no-underline ${
                     idx === 0
                       ? 'bg-black text-white hover:bg-neon-pink hover:text-black'
                       : 'bg-white text-black hover:bg-gray-100'
@@ -502,9 +501,8 @@ export default function ItemDetail() {
                 href={`https://${isMobile ? 'api' : 'web'}.whatsapp.com/send?phone=${cleanNumber}&text=${encodeURIComponent(
                   `Hi! I want to buy your "${item.title}" for ₱${item.price} on Forever Decluttering.\n\n📦 Ship to:\nName: ${buyerName}\nAddress: ${shippingAddress}\nPreferred courier: ${courier}\n\nPlease let me know the shipping fee!\n\n${itemUrl}`
                 )}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`flex items-center justify-center gap-2 w-full py-4 font-display text-lg border-[3px] border-black brutal-shadow no-underline transition-all ${
+                {...(!isMobile ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                className={`flex items-center justify-center gap-2 w-full min-h-[48px] py-4 font-display text-lg border-[3px] border-black brutal-shadow no-underline transition-all ${
                   buyerName && shippingAddress
                     ? 'bg-neon-pink text-black hover:brightness-110 cursor-pointer'
                     : 'bg-gray-200 text-gray-400 pointer-events-none'

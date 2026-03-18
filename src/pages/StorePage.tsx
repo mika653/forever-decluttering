@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { db } from '../firebase';
-import { collection, query, where, orderBy, onSnapshot, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { Store, Item } from '../types';
 import StoreHeader from '../components/StoreHeader';
 import ItemCard from '../components/ItemCard';
@@ -21,41 +21,44 @@ export default function StorePage({ defaultSlug }: StorePageProps = {}) {
   const [notFound, setNotFound] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Fetch store by slug
   useEffect(() => {
     if (!slug) return;
 
-    const fetchStore = async () => {
-      const q = query(collection(db, 'stores'), where('slug', '==', slug));
-      const snapshot = await getDocs(q);
-      if (snapshot.empty) {
+    const fetchData = async () => {
+      try {
+        // Fetch store
+        const storeQuery = query(collection(db, 'stores'), where('slug', '==', slug));
+        const storeSnapshot = await getDocs(storeQuery);
+
+        if (storeSnapshot.empty) {
+          setNotFound(true);
+          setLoading(false);
+          return;
+        }
+
+        setStore(storeSnapshot.docs[0].data() as Store);
+
+        // Fetch items (simple query — no composite index needed)
+        const itemsQuery = query(
+          collection(db, 'items'),
+          where('storeSlug', '==', slug),
+          where('status', '==', 'available')
+        );
+        const itemsSnapshot = await getDocs(itemsQuery);
+        const itemsData = itemsSnapshot.docs
+          .map((doc) => ({ id: doc.id, ...doc.data() } as Item))
+          .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+
+        setItems(itemsData);
+      } catch (err) {
+        console.error('Error loading store:', err);
         setNotFound(true);
+      } finally {
         setLoading(false);
-        return;
       }
-      setStore(snapshot.docs[0].data() as Store);
     };
 
-    fetchStore();
-  }, [slug]);
-
-  // Listen to items for this store
-  useEffect(() => {
-    if (!slug) return;
-
-    const q = query(
-      collection(db, 'items'),
-      where('storeSlug', '==', slug),
-      where('status', '==', 'available'),
-      orderBy('createdAt', 'desc')
-    );
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      setItems(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Item)));
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
+    fetchData();
   }, [slug]);
 
   const filteredItems = items.filter(

@@ -6,8 +6,6 @@ import {
   collection,
   query,
   where,
-  orderBy,
-  onSnapshot,
   getDocs,
   updateDoc,
   deleteDoc,
@@ -44,22 +42,29 @@ export default function Dashboard({ user }: DashboardProps) {
     fetchStore();
   }, [user.uid, navigate]);
 
-  // Listen to items
+  // Fetch items
   useEffect(() => {
     if (!store) return;
 
-    const q = query(
-      collection(db, 'items'),
-      where('storeSlug', '==', store.slug),
-      orderBy('createdAt', 'desc')
-    );
+    const fetchItems = async () => {
+      try {
+        const q = query(
+          collection(db, 'items'),
+          where('storeSlug', '==', store.slug)
+        );
+        const snapshot = await getDocs(q);
+        const itemsData = snapshot.docs
+          .map((d) => ({ id: d.id, ...d.data() } as Item))
+          .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+        setItems(itemsData);
+      } catch (err) {
+        console.error('Error loading items:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      setItems(snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as Item)));
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
+    fetchItems();
   }, [store?.slug]);
 
   const handleMarkSold = async (itemId: string) => {

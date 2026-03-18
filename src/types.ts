@@ -10,6 +10,7 @@ export interface Store {
   contactMethod: 'WhatsApp' | 'Viber' | 'SMS' | 'Messenger';
   paymentMethods?: string[];
   paymentQR?: string;
+  couriers?: string[];
   createdAt: Timestamp;
 }
 

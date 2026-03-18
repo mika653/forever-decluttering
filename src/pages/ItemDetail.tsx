@@ -17,7 +17,7 @@ export default function ItemDetail() {
   const [showBuyNow, setShowBuyNow] = useState(false);
   const [buyerName, setBuyerName] = useState('');
   const [shippingAddress, setShippingAddress] = useState('');
-  const [courier, setCourier] = useState('J&T Express');
+  const [courier, setCourier] = useState('');
   const [copiedMessage, setCopiedMessage] = useState(false);
   const [copiedNumber, setCopiedNumber] = useState(false);
 
@@ -367,7 +367,7 @@ export default function ItemDetail() {
                   <img
                     src={store.paymentQR}
                     alt="Payment QR Code"
-                    className="w-48 h-48 object-contain mx-auto"
+                    className="w-64 h-64 object-contain mx-auto"
                     referrerPolicy="no-referrer"
                   />
                 </div>
@@ -401,10 +401,12 @@ export default function ItemDetail() {
                     onChange={(e) => setCourier(e.target.value)}
                     className="w-full border-[3px] border-black px-3 py-2 mono text-sm bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-neon-pink"
                   >
-                    <option value="J&T Express">J&T Express</option>
-                    <option value="LBC">LBC</option>
-                    <option value="Grab Express">Grab Express</option>
-                    <option value="Ninja Van">Ninja Van</option>
+                    {(store.couriers && store.couriers.length > 0
+                      ? store.couriers
+                      : ['J&T Express', 'LBC', 'Grab Express', 'Ninja Van']
+                    ).map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
                     <option value="Other">Other</option>
                   </select>
                 </div>

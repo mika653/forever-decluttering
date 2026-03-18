@@ -7,7 +7,7 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Store } from '../types';
 import { serverTimestamp } from 'firebase/firestore';
 import { motion } from 'motion/react';
-import { Upload, Trash2 } from 'lucide-react';
+import { Upload, Trash2, Plus, X } from 'lucide-react';
 
 interface StoreSetupProps {
   user: User;
@@ -23,6 +23,8 @@ export default function StoreSetup({ user }: StoreSetupProps) {
   const [contactNumber, setContactNumber] = useState('');
   const [contactMethod, setContactMethod] = useState<Store['contactMethod']>('WhatsApp');
   const [paymentMethods, setPaymentMethods] = useState<string[]>(['GCash']);
+  const [couriers, setCouriers] = useState<string[]>(['J&T Express', 'LBC']);
+  const [customCourier, setCustomCourier] = useState('');
   const [slugStatus, setSlugStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
   const [paymentQR, setPaymentQR] = useState<string>('');
   const [uploadingQR, setUploadingQR] = useState(false);
@@ -43,6 +45,7 @@ export default function StoreSetup({ user }: StoreSetupProps) {
         setContactNumber(storeData.contactNumber);
         setContactMethod(storeData.contactMethod);
         setPaymentMethods(storeData.paymentMethods || ['GCash']);
+        setCouriers(storeData.couriers || ['J&T Express', 'LBC']);
         setPaymentQR(storeData.paymentQR || '');
         setIsEditing(true);
         setSlugStatus('available');
@@ -86,6 +89,20 @@ export default function StoreSetup({ user }: StoreSetupProps) {
     );
   };
 
+  const toggleCourier = (c: string) => {
+    setCouriers((prev) =>
+      prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]
+    );
+  };
+
+  const addCustomCourier = () => {
+    const trimmed = customCourier.trim();
+    if (trimmed && !couriers.includes(trimmed)) {
+      setCouriers((prev) => [...prev, trimmed]);
+    }
+    setCustomCourier('');
+  };
+
   const handleQRUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !slug) return;
@@ -120,6 +137,7 @@ export default function StoreSetup({ user }: StoreSetupProps) {
         contactNumber,
         contactMethod,
         paymentMethods,
+        couriers,
         paymentQR: paymentQR || null,
       };
 
@@ -246,6 +264,54 @@ export default function StoreSetup({ user }: StoreSetupProps) {
                   {method}
                 </button>
               ))}
+            </div>
+          </div>
+
+          {/* Couriers */}
+          <div>
+            <label className="mono text-xs font-bold uppercase block mb-1">Available Couriers</label>
+            <div className="flex flex-wrap gap-2 mb-2">
+              {['J&T Express', 'LBC', 'Flash Express', 'Grab Express', 'Lalamove', 'Ninja Van'].map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => toggleCourier(c)}
+                  className={`px-3 py-1.5 text-xs font-bold uppercase border-[3px] border-black brutal-shadow-small transition-colors ${
+                    couriers.includes(c)
+                      ? 'bg-neon-pink'
+                      : 'bg-white hover:bg-gray-100'
+                  }`}
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
+            {/* Custom couriers */}
+            {couriers.filter((c) => !['J&T Express', 'LBC', 'Flash Express', 'Grab Express', 'Lalamove', 'Ninja Van'].includes(c)).map((c) => (
+              <span key={c} className="inline-flex items-center gap-1 px-2 py-1 text-xs font-bold uppercase border-[3px] border-black bg-neon-pink mr-1 mb-1">
+                {c}
+                <button type="button" onClick={() => toggleCourier(c)} className="hover:text-red-600">
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            ))}
+            <div className="flex gap-2 mt-2">
+              <input
+                type="text"
+                value={customCourier}
+                onChange={(e) => setCustomCourier(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCustomCourier())}
+                className="brutal-input text-sm flex-1"
+                placeholder="Add custom courier..."
+              />
+              <button
+                type="button"
+                onClick={addCustomCourier}
+                disabled={!customCourier.trim()}
+                className="px-3 border-[3px] border-black bg-white hover:bg-gray-100 brutal-shadow-small transition-colors disabled:opacity-50"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
             </div>
           </div>
 

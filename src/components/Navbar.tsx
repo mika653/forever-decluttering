@@ -30,6 +30,17 @@ export default function Navbar({ user }: NavbarProps) {
         </Link>
 
         <div className="flex items-center gap-3">
+          {/* Portfolio link */}
+          <a
+            href="https://heymika.me"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-8 h-8 border-[3px] border-black brutal-shadow-small bg-black text-white flex items-center justify-center font-display text-sm hover:bg-neon-pink hover:text-black transition-colors"
+            title="heymika.me"
+          >
+            M
+          </a>
+
           {user ? (
             <>
               <button

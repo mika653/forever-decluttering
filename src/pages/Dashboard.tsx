@@ -16,7 +16,7 @@ import {
 import { Store, Item } from '../types';
 import ItemCard from '../components/ItemCard';
 import { Plus, Settings, Copy, Check, ExternalLink } from 'lucide-react';
-import { motion } from 'motion/react';
+import LoadingAnimation from '../components/LoadingAnimation';
 
 interface DashboardProps {
   user: User;
@@ -83,15 +83,7 @@ export default function Dashboard({ user }: DashboardProps) {
     filter === 'all' ? items : items.filter((item) => item.status === filter);
 
   if (loading && !store) {
-    return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 0.6, repeat: Infinity, ease: 'linear' }}
-          className="w-8 h-8 border-[3px] border-black border-t-neon-pink"
-        />
-      </div>
-    );
+    return <LoadingAnimation />;
   }
 
   if (!store) return null;

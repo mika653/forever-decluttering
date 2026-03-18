@@ -4,7 +4,7 @@ import { db } from '../firebase';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { Item, Store } from '../types';
 import { ArrowLeft, MessageCircle, ChevronLeft, ChevronRight } from 'lucide-react';
-import { motion } from 'motion/react';
+import LoadingAnimation from '../components/LoadingAnimation';
 
 export default function ItemDetail() {
   const { slug, itemId } = useParams<{ slug: string; itemId: string }>();
@@ -35,15 +35,7 @@ export default function ItemDetail() {
   }, [itemId, slug]);
 
   if (loading) {
-    return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 0.6, repeat: Infinity, ease: 'linear' }}
-          className="w-8 h-8 border-[3px] border-black border-t-neon-pink"
-        />
-      </div>
-    );
+    return <LoadingAnimation />;
   }
 
   if (!item || !store) {

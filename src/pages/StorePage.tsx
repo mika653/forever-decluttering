@@ -6,7 +6,7 @@ import { Store, Item } from '../types';
 import StoreHeader from '../components/StoreHeader';
 import ItemCard from '../components/ItemCard';
 import { Package, Search } from 'lucide-react';
-import { motion } from 'motion/react';
+import LoadingAnimation from '../components/LoadingAnimation';
 
 interface StorePageProps {
   defaultSlug?: string;
@@ -65,15 +65,7 @@ export default function StorePage({ defaultSlug }: StorePageProps = {}) {
   );
 
   if (loading) {
-    return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 0.6, repeat: Infinity, ease: 'linear' }}
-          className="w-8 h-8 border-[3px] border-black border-t-neon-pink"
-        />
-      </div>
-    );
+    return <LoadingAnimation />;
   }
 
   if (notFound) {

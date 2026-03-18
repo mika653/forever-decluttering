@@ -11,7 +11,7 @@ import AddItem from './pages/AddItem';
 import StoreSetup from './pages/StoreSetup';
 import { db } from './firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { motion } from 'motion/react';
+import LoadingAnimation from './components/LoadingAnimation';
 
 // The default store slug shown at the root URL
 const DEFAULT_STORE_SLUG = 'mika';
@@ -57,12 +57,8 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 0.6, repeat: Infinity, ease: 'linear' }}
-          className="w-8 h-8 border-[3px] border-black border-t-neon-pink"
-        />
+      <div className="min-h-screen flex items-center justify-center bg-gallery-white">
+        <LoadingAnimation />
       </div>
     );
   }

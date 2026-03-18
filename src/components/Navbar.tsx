@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { auth } from '../firebase';
-import { signInWithRedirect, GoogleAuthProvider, signOut, User } from 'firebase/auth';
+import { signInWithPopup, GoogleAuthProvider, signOut, User } from 'firebase/auth';
 import { Package, LogIn, LogOut, LayoutDashboard } from 'lucide-react';
 
 interface NavbarProps {
@@ -10,8 +10,13 @@ interface NavbarProps {
 export default function Navbar({ user }: NavbarProps) {
   const navigate = useNavigate();
 
-  const handleLogin = () => {
-    signInWithRedirect(auth, new GoogleAuthProvider());
+  const handleLogin = async () => {
+    try {
+      await signInWithPopup(auth, new GoogleAuthProvider());
+      navigate('/dashboard');
+    } catch (err) {
+      console.error('Login error', err);
+    }
   };
 
   return (

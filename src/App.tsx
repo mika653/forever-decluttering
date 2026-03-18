@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { auth } from './firebase';
-import { onAuthStateChanged, User } from 'firebase/auth';
+import { onAuthStateChanged, getRedirectResult, User } from 'firebase/auth';
 import Navbar from './components/Navbar';
 import Landing from './pages/Landing';
 import StorePage from './pages/StorePage';
@@ -47,7 +47,20 @@ export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const [redirectHandled, setRedirectHandled] = useState(false);
+
   useEffect(() => {
+    // Handle redirect result first (user coming back from Google sign-in)
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result?.user) {
+          // User just signed in via redirect — navigate to dashboard
+          window.location.href = '/dashboard';
+        }
+      })
+      .catch(console.error)
+      .finally(() => setRedirectHandled(true));
+
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
       setLoading(false);

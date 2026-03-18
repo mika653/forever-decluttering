@@ -19,6 +19,7 @@ export default function StorePage({ defaultSlug }: StorePageProps = {}) {
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [error, setError] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
@@ -52,7 +53,7 @@ export default function StorePage({ defaultSlug }: StorePageProps = {}) {
         setItems(itemsData);
       } catch (err) {
         console.error('Error loading store:', err);
-        setNotFound(true);
+        setError(true);
       } finally {
         setLoading(false);
       }
@@ -69,6 +70,26 @@ export default function StorePage({ defaultSlug }: StorePageProps = {}) {
 
   if (loading) {
     return <LoadingAnimation />;
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-20 text-center">
+        <div className="border-[3px] border-black p-12 bg-white brutal-shadow">
+          <Package className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+          <h1 className="text-4xl font-display mb-2">Something Went Wrong</h1>
+          <p className="mono text-sm text-gray-500 mb-4">
+            We couldn't load this store. Try refreshing the page.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-6 py-3 border-[3px] border-black bg-neon-pink font-display brutal-shadow-small hover:translate-y-[-2px] transition-transform"
+          >
+            Refresh
+          </button>
+        </div>
+      </div>
+    );
   }
 
   if (notFound) {

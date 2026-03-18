@@ -14,7 +14,7 @@ export default function StoreHeader({ store, itemCount }: StoreHeaderProps) {
     const url = `${window.location.origin}/${store.slug}`;
     const shareData = {
       title: `${store.displayName} — Forever Decluttering`,
-      text: `Check out ${store.displayName}'s store on Forever Decluttering!`,
+      text: `Check out ${store.displayName}'s store on Forever Decluttering!\n${url}`,
       url,
     };
 

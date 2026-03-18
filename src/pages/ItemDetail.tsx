@@ -63,7 +63,7 @@ export default function ItemDetail() {
     switch (store.contactMethod) {
       case 'WhatsApp':
         return {
-          url: `https://wa.me/${cleanNumber}?text=${encodeURIComponent(prefilledMessage)}`,
+          url: `https://api.whatsapp.com/send?phone=${cleanNumber}&text=${encodeURIComponent(prefilledMessage)}`,
           label: 'Open WhatsApp',
         };
       case 'Messenger':
@@ -266,9 +266,7 @@ export default function ItemDetail() {
               {getWebLink() && (
                 <a
                   href={getWebLink()!.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 w-full py-4 bg-black text-white font-display text-lg hover:bg-neon-pink hover:text-black transition-all brutal-shadow border-[3px] border-black cursor-pointer mb-3"
+                  className="flex items-center justify-center gap-2 w-full py-4 bg-black text-white font-display text-lg hover:bg-neon-pink hover:text-black transition-all brutal-shadow border-[3px] border-black cursor-pointer mb-3 no-underline"
                 >
                   <ExternalLink className="w-5 h-5" />
                   {getWebLink()!.label}

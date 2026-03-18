@@ -633,6 +633,246 @@ export default function StoreSetup({ user }: StoreSetupProps) {
     }
   };
 
+  const [saved, setSaved] = useState(false);
+
+  const handleSaveEdit = async () => {
+    if (slugStatus !== 'available' || !contactNumber) return;
+    setSubmitting(true);
+    try {
+      await handleSave();
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // ============ EDIT MODE: single form ============
+  if (isEditing) {
+    return (
+      <div className="max-w-xl mx-auto px-4 py-8">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-3xl sm:text-4xl font-display tracking-tighter">
+            Edit Store
+          </h1>
+          <button
+            type="button"
+            onClick={() => navigate(`/${slug.toLowerCase()}`)}
+            className="mono text-xs font-bold uppercase text-gray-400 hover:text-black border-b-2 border-gray-300 hover:border-black transition-colors"
+          >
+            View Store
+          </button>
+        </div>
+
+        <div className="space-y-6">
+          {/* Store Name */}
+          <div className="border-[3px] border-black p-5 bg-white brutal-shadow-small">
+            <label className="mono text-xs font-bold uppercase text-gray-400 block mb-2">Store Name</label>
+            <input
+              type="text"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              className="brutal-input text-lg w-full py-3 px-4"
+              placeholder="Your name or store name"
+            />
+          </div>
+
+          {/* Your Link (read-only) */}
+          <div className="border-[3px] border-black p-5 bg-white brutal-shadow-small">
+            <label className="mono text-xs font-bold uppercase text-gray-400 block mb-2">Your Link</label>
+            <div className="flex items-center gap-2">
+              <div className="brutal-input text-lg w-full py-3 px-4 bg-gray-50 text-gray-500">
+                foreverdecluttering.heymika.me/{slug}
+              </div>
+              <button
+                type="button"
+                onClick={copyLink}
+                className="flex items-center gap-1 px-3 py-3 border-[3px] border-black bg-white hover:bg-gray-100 transition-colors brutal-shadow-small mono text-xs font-bold uppercase shrink-0"
+              >
+                {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+              </button>
+            </div>
+            <p className="mono text-xs text-gray-400 mt-1">Your link can't be changed.</p>
+          </div>
+
+          {/* Bio */}
+          <div className="border-[3px] border-black p-5 bg-white brutal-shadow-small">
+            <label className="mono text-xs font-bold uppercase text-gray-400 block mb-2">Bio</label>
+            <textarea
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              className="brutal-input text-base w-full py-3 px-4 min-h-[100px]"
+              placeholder="Decluttering my life, one item at a time..."
+              maxLength={200}
+            />
+          </div>
+
+          {/* Contact */}
+          <div className="border-[3px] border-black p-5 bg-white brutal-shadow-small">
+            <label className="mono text-xs font-bold uppercase text-gray-400 block mb-2">Contact Method</label>
+            <div className="space-y-3">
+              <select
+                value={contactMethod}
+                onChange={(e) => setContactMethod(e.target.value as Store['contactMethod'])}
+                className="brutal-input text-base w-full py-3 px-4 appearance-none bg-white"
+              >
+                <option value="WhatsApp">WhatsApp</option>
+                <option value="Viber">Viber</option>
+                <option value="SMS">SMS</option>
+                <option value="Messenger">Messenger</option>
+              </select>
+              <input
+                type="text"
+                value={contactNumber}
+                onChange={(e) => setContactNumber(e.target.value)}
+                className="brutal-input text-base w-full py-3 px-4"
+                placeholder={contactMethod === 'Messenger' ? 'your.username' : '+63 917 123 4567'}
+              />
+              {contactMethod === 'Messenger' && (
+                <p className="mono text-xs text-gray-400">
+                  Enter your Messenger username (found in your Facebook profile URL).
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Payment Methods */}
+          <div className="border-[3px] border-black p-5 bg-white brutal-shadow-small">
+            <label className="mono text-xs font-bold uppercase text-gray-400 block mb-2">Payment Methods</label>
+            <div className="flex flex-wrap gap-2">
+              {['GCash', 'Maya', 'Bank Transfer', 'Cash on Pickup'].map((method) => (
+                <button
+                  key={method}
+                  type="button"
+                  onClick={() => togglePayment(method)}
+                  className={`px-4 py-2.5 text-xs font-bold uppercase border-[3px] border-black brutal-shadow-small transition-colors ${
+                    paymentMethods.includes(method) ? 'bg-neon-pink' : 'bg-white hover:bg-gray-100'
+                  }`}
+                >
+                  {method}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Couriers */}
+          <div className="border-[3px] border-black p-5 bg-white brutal-shadow-small">
+            <label className="mono text-xs font-bold uppercase text-gray-400 block mb-2">Couriers</label>
+            <div className="flex flex-wrap gap-2 mb-3">
+              {DEFAULT_COURIERS.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => toggleCourier(c)}
+                  className={`px-4 py-2.5 text-xs font-bold uppercase border-[3px] border-black brutal-shadow-small transition-colors ${
+                    couriers.includes(c) ? 'bg-neon-pink' : 'bg-white hover:bg-gray-100'
+                  }`}
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
+            {couriers.filter((c) => !DEFAULT_COURIERS.includes(c)).map((c) => (
+              <span key={c} className="inline-flex items-center gap-1 px-3 py-2 text-xs font-bold uppercase border-[3px] border-black bg-neon-pink mr-2 mb-2">
+                {c}
+                <button type="button" onClick={() => toggleCourier(c)} className="hover:text-red-600">
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            ))}
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={customCourier}
+                onChange={(e) => setCustomCourier(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCustomCourier())}
+                className="brutal-input text-base flex-1 py-3 px-4"
+                placeholder="Add custom courier..."
+              />
+              <button
+                type="button"
+                onClick={addCustomCourier}
+                disabled={!customCourier.trim()}
+                className="px-4 border-[3px] border-black bg-white hover:bg-gray-100 brutal-shadow-small transition-colors disabled:opacity-50"
+              >
+                <Plus className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Payment QR Codes */}
+          <div className="border-[3px] border-black p-5 bg-white brutal-shadow-small">
+            <label className="mono text-xs font-bold uppercase text-gray-400 block mb-2">Payment QR Codes</label>
+            {paymentQRs.length > 0 && (
+              <div className="space-y-2 mb-4">
+                {paymentQRs.map((qr, index) => (
+                  <div key={index} className="border-[3px] border-black p-3 bg-gray-50 flex items-center gap-3">
+                    <img
+                      src={qr.url}
+                      alt={`${qr.label} QR`}
+                      className="w-16 h-16 object-contain border-[2px] border-black bg-white"
+                      referrerPolicy="no-referrer"
+                    />
+                    <span className="mono text-xs font-bold uppercase flex-1">{qr.label}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeQR(index)}
+                      className="flex items-center gap-1 px-2 py-1.5 text-xs font-bold uppercase border-[3px] border-black bg-white hover:bg-red-100 transition-colors brutal-shadow-small"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="border-[3px] border-dashed border-black p-4 bg-gray-50">
+              <div className="flex gap-2">
+                <select
+                  value={qrLabel}
+                  onChange={(e) => setQrLabel(e.target.value)}
+                  className="flex-1 border-[3px] border-black px-3 py-3 mono text-sm font-bold uppercase bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-neon-pink"
+                >
+                  <option value="GCash">GCash</option>
+                  <option value="Maya">Maya</option>
+                  <option value="GoTyme">GoTyme</option>
+                  <option value="Bank Transfer">Bank Transfer</option>
+                  <option value="Other">Other</option>
+                </select>
+                <button
+                  type="button"
+                  onClick={() => qrInputRef.current?.click()}
+                  disabled={uploadingQR || !slug}
+                  className="flex items-center justify-center gap-2 px-4 py-3 border-[3px] border-black bg-white hover:bg-gray-100 transition-colors mono text-sm font-bold uppercase disabled:opacity-50 brutal-shadow-small"
+                >
+                  <Upload className="w-4 h-4" />
+                  {uploadingQR ? 'Uploading...' : 'Add QR'}
+                </button>
+              </div>
+            </div>
+            <input
+              ref={qrInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleQRUpload}
+              className="hidden"
+            />
+          </div>
+
+          {/* Save Button */}
+          <button
+            type="button"
+            onClick={handleSaveEdit}
+            disabled={submitting || !displayName.trim() || !contactNumber.trim() || paymentMethods.length === 0}
+            className="w-full py-4 bg-black text-white font-display text-lg hover:bg-neon-pink hover:text-black transition-all brutal-shadow border-[3px] border-black disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {submitting ? 'Saving...' : saved ? 'Saved!' : 'Save Changes'}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ============ NEW STORE: step-by-step wizard ============
   return (
     <div className="max-w-xl mx-auto px-4 py-12">
       <ProgressBar />

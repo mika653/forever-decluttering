@@ -1,6 +1,6 @@
 import { useNavigate, Link } from 'react-router-dom';
 import { auth } from '../firebase';
-import { signInWithRedirect, GoogleAuthProvider, User } from 'firebase/auth';
+import { signInWithPopup, GoogleAuthProvider, User } from 'firebase/auth';
 import { Camera, Link as LinkIcon, MessageCircle, Package, ArrowRight } from 'lucide-react';
 import { motion } from 'motion/react';
 
@@ -11,12 +11,21 @@ interface LandingProps {
 export default function Landing({ user }: LandingProps) {
   const navigate = useNavigate();
 
-  const handleGetStarted = () => {
+  const handleGetStarted = async () => {
     if (user) {
       navigate('/dashboard');
       return;
     }
-    signInWithRedirect(auth, new GoogleAuthProvider());
+    try {
+      await signInWithPopup(auth, new GoogleAuthProvider());
+      navigate('/dashboard');
+    } catch (err: any) {
+      if (err?.code === 'auth/popup-blocked') {
+        alert('Please allow popups for this site in your browser settings, then try again.');
+      } else {
+        console.error('Login error', err);
+      }
+    }
   };
 
   // Note: This page is accessible at /start

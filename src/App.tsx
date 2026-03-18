@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { auth } from './firebase';
-import { onAuthStateChanged, User } from 'firebase/auth';
+import { onAuthStateChanged, getRedirectResult, User } from 'firebase/auth';
 import Navbar from './components/Navbar';
 import Landing from './pages/Landing';
 import StorePage from './pages/StorePage';
@@ -48,6 +48,15 @@ export default function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Handle return from Google sign-in redirect
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result?.user) {
+          window.location.replace('/dashboard');
+        }
+      })
+      .catch(console.error);
+
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
       setLoading(false);

@@ -1,10 +1,9 @@
 {
-  "projectId": "gen-lang-client-0490433148",
-  "appId": "1:692786175298:web:a0587e9572f6e532d67cdb",
-  "apiKey": "AIzaSyCbWjpAVYvMqz8W_wSpXySwKMf2xtzdRxo",
-  "authDomain": "gen-lang-client-0490433148.firebaseapp.com",
-  "firestoreDatabaseId": "ai-studio-6ee6fa34-efd5-432f-b0e4-857310d91981",
-  "storageBucket": "gen-lang-client-0490433148.firebasestorage.app",
-  "messagingSenderId": "692786175298",
-  "measurementId": ""
+  "projectId": "forever-decluttering",
+  "appId": "1:1029480672457:web:98e613c3486dd14dbdf118",
+  "apiKey": "AIzaSyAT4v7JdT2FRfCysCHDE4RdOS0VtwqCDJY",
+  "authDomain": "forever-decluttering.firebaseapp.com",
+  "storageBucket": "forever-decluttering.firebasestorage.app",
+  "messagingSenderId": "1029480672457",
+  "measurementId": "G-ZDKFJDF0C7"
 }

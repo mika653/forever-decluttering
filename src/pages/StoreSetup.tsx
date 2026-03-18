@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User } from 'firebase/auth';
-import { db } from '../firebase';
+import { db, storage } from '../firebase';
 import { collection, query, where, getDocs, doc, setDoc, getDoc } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Store } from '../types';
 import { serverTimestamp } from 'firebase/firestore';
 import { motion } from 'motion/react';
+import { Upload, Trash2 } from 'lucide-react';
 
 interface StoreSetupProps {
   user: User;
@@ -22,6 +24,9 @@ export default function StoreSetup({ user }: StoreSetupProps) {
   const [contactMethod, setContactMethod] = useState<Store['contactMethod']>('WhatsApp');
   const [paymentMethods, setPaymentMethods] = useState<string[]>(['GCash']);
   const [slugStatus, setSlugStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
+  const [paymentQR, setPaymentQR] = useState<string>('');
+  const [uploadingQR, setUploadingQR] = useState(false);
+  const qrInputRef = useRef<HTMLInputElement>(null);
   const [submitting, setSubmitting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
@@ -38,6 +43,7 @@ export default function StoreSetup({ user }: StoreSetupProps) {
         setContactNumber(storeData.contactNumber);
         setContactMethod(storeData.contactMethod);
         setPaymentMethods(storeData.paymentMethods || ['GCash']);
+        setPaymentQR(storeData.paymentQR || '');
         setIsEditing(true);
         setSlugStatus('available');
       }
@@ -80,6 +86,25 @@ export default function StoreSetup({ user }: StoreSetupProps) {
     );
   };
 
+  const handleQRUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !slug) return;
+
+    setUploadingQR(true);
+    try {
+      const filename = `${Date.now()}-${file.name}`;
+      const storageRef = ref(storage, `stores/${slug.toLowerCase()}/payment-qr/${filename}`);
+      await uploadBytes(storageRef, file);
+      const url = await getDownloadURL(storageRef);
+      setPaymentQR(url);
+    } catch (err) {
+      console.error('QR upload error', err);
+    } finally {
+      setUploadingQR(false);
+      if (qrInputRef.current) qrInputRef.current.value = '';
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (slugStatus !== 'available' || !contactNumber) return;
@@ -95,6 +120,7 @@ export default function StoreSetup({ user }: StoreSetupProps) {
         contactNumber,
         contactMethod,
         paymentMethods,
+        paymentQR: paymentQR || null,
       };
 
       if (!isEditing) {
@@ -221,6 +247,49 @@ export default function StoreSetup({ user }: StoreSetupProps) {
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Payment QR Code */}
+          <div>
+            <label className="mono text-xs font-bold uppercase block mb-1">Payment QR Code (optional)</label>
+            <p className="mono text-[10px] text-gray-400 mb-2">Upload your GCash, Maya, or bank QR code so buyers can pay easily.</p>
+
+            {paymentQR ? (
+              <div className="border-[3px] border-black p-3 bg-gray-50">
+                <img
+                  src={paymentQR}
+                  alt="Payment QR Code"
+                  className="w-48 h-48 object-contain mx-auto mb-3"
+                  referrerPolicy="no-referrer"
+                />
+                <button
+                  type="button"
+                  onClick={() => setPaymentQR('')}
+                  className="flex items-center gap-1 mx-auto px-3 py-1.5 text-xs font-bold uppercase border-[3px] border-black bg-white hover:bg-red-100 transition-colors brutal-shadow-small"
+                >
+                  <Trash2 className="w-3 h-3" />
+                  Remove QR
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => qrInputRef.current?.click()}
+                disabled={uploadingQR || !slug}
+                className="flex items-center justify-center gap-2 w-full py-3 border-[3px] border-dashed border-black bg-gray-50 hover:bg-gray-100 transition-colors mono text-sm font-bold uppercase disabled:opacity-50"
+              >
+                <Upload className="w-4 h-4" />
+                {uploadingQR ? 'Uploading...' : 'Upload QR Code'}
+              </button>
+            )}
+
+            <input
+              ref={qrInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleQRUpload}
+              className="hidden"
+            />
           </div>
 
           <button

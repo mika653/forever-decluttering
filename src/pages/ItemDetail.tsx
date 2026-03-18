@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { db } from '../firebase';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { Item, Store } from '../types';
-import { ArrowLeft, MessageCircle, ChevronLeft, ChevronRight, Copy, Check, X, ExternalLink } from 'lucide-react';
+import { ArrowLeft, MessageCircle, ShoppingBag, ChevronLeft, ChevronRight, Copy, Check, X, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import LoadingAnimation from '../components/LoadingAnimation';
 
@@ -14,6 +14,10 @@ export default function ItemDetail() {
   const [loading, setLoading] = useState(true);
   const [currentImage, setCurrentImage] = useState(0);
   const [showContact, setShowContact] = useState(false);
+  const [showBuyNow, setShowBuyNow] = useState(false);
+  const [buyerName, setBuyerName] = useState('');
+  const [shippingAddress, setShippingAddress] = useState('');
+  const [courier, setCourier] = useState('J&T Express');
   const [copiedMessage, setCopiedMessage] = useState(false);
   const [copiedNumber, setCopiedNumber] = useState(false);
 
@@ -182,13 +186,22 @@ export default function ItemDetail() {
               )}
 
               {item.status === 'available' ? (
-                <button
-                  onClick={() => setShowContact(true)}
-                  className="flex items-center justify-center gap-2 w-full py-4 bg-black text-white font-display text-xl hover:bg-neon-pink hover:text-black transition-all brutal-shadow border-[3px] border-black cursor-pointer"
-                >
-                  <MessageCircle className="w-5 h-5" />
-                  I Want This
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setShowContact(true)}
+                    className="flex items-center justify-center gap-2 flex-1 py-4 bg-black text-white font-display text-lg hover:bg-gray-800 transition-all brutal-shadow border-[3px] border-black cursor-pointer"
+                  >
+                    <MessageCircle className="w-5 h-5" />
+                    I Want This
+                  </button>
+                  <button
+                    onClick={() => setShowBuyNow(true)}
+                    className="flex items-center justify-center gap-2 flex-1 py-4 bg-neon-pink text-black font-display text-lg hover:brightness-110 transition-all brutal-shadow border-[3px] border-black cursor-pointer"
+                  >
+                    <ShoppingBag className="w-5 h-5" />
+                    Buy Now
+                  </button>
+                </div>
               ) : (
                 <div className="w-full py-4 bg-gray-200 text-gray-500 font-display text-xl text-center border-[3px] border-gray-300">
                   SOLD
@@ -275,6 +288,145 @@ export default function ItemDetail() {
 
               <p className="mono text-[10px] text-gray-400 text-center">
                 If the app doesn't open, copy the number and message them directly.
+              </p>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Buy Now Modal */}
+      <AnimatePresence>
+        {showBuyNow && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowBuyNow(false)}
+              className="fixed inset-0 bg-black/50 z-50"
+            />
+
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t-[3px] border-black p-6 max-h-[85vh] overflow-y-auto"
+            >
+              <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-4" />
+
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-display">Buy Now</h2>
+                <button
+                  onClick={() => setShowBuyNow(false)}
+                  className="p-1 border-[3px] border-black hover:bg-gray-100 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Item summary */}
+              <div className="border-[3px] border-black p-3 mb-4 bg-gray-50 flex items-center gap-3">
+                {item.images.length > 0 && (
+                  <img
+                    src={item.images[0]}
+                    alt={item.title}
+                    className="w-14 h-14 object-cover border-[2px] border-black"
+                    referrerPolicy="no-referrer"
+                  />
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="font-display text-sm leading-tight truncate">{item.title}</p>
+                  <p className="font-display text-lg text-neon-pink" style={{ WebkitTextStroke: '0.5px black' }}>
+                    ₱{item.price}
+                  </p>
+                </div>
+              </div>
+
+              {/* Payment methods */}
+              {store.paymentMethods && store.paymentMethods.length > 0 && (
+                <div className="mb-4">
+                  <p className="mono text-xs text-gray-400 uppercase font-bold mb-1">Accepted Payment</p>
+                  <div className="flex gap-1 flex-wrap">
+                    {store.paymentMethods.map((method) => (
+                      <span
+                        key={method}
+                        className="text-[10px] font-mono font-bold uppercase bg-black text-white px-1.5 py-0.5"
+                      >
+                        {method}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Payment QR */}
+              {store.paymentQR && (
+                <div className="border-[3px] border-black p-3 mb-4 bg-gray-50 text-center">
+                  <p className="mono text-xs font-bold uppercase mb-2">Scan to pay</p>
+                  <img
+                    src={store.paymentQR}
+                    alt="Payment QR Code"
+                    className="w-48 h-48 object-contain mx-auto"
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
+              )}
+
+              {/* Buyer form */}
+              <div className="space-y-3 mb-4">
+                <div>
+                  <label className="mono text-xs font-bold uppercase block mb-1">Your Name</label>
+                  <input
+                    type="text"
+                    value={buyerName}
+                    onChange={(e) => setBuyerName(e.target.value)}
+                    className="w-full border-[3px] border-black px-3 py-2 mono text-sm focus:outline-none focus:ring-2 focus:ring-neon-pink"
+                    placeholder="Juan Dela Cruz"
+                  />
+                </div>
+                <div>
+                  <label className="mono text-xs font-bold uppercase block mb-1">Shipping Address</label>
+                  <textarea
+                    value={shippingAddress}
+                    onChange={(e) => setShippingAddress(e.target.value)}
+                    className="w-full border-[3px] border-black px-3 py-2 mono text-sm min-h-[70px] focus:outline-none focus:ring-2 focus:ring-neon-pink"
+                    placeholder="123 Main St, Brgy. Sample, Makati City, Metro Manila 1200"
+                  />
+                </div>
+                <div>
+                  <label className="mono text-xs font-bold uppercase block mb-1">Preferred Courier</label>
+                  <select
+                    value={courier}
+                    onChange={(e) => setCourier(e.target.value)}
+                    className="w-full border-[3px] border-black px-3 py-2 mono text-sm bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-neon-pink"
+                  >
+                    <option value="J&T Express">J&T Express</option>
+                    <option value="LBC">LBC</option>
+                    <option value="Grab Express">Grab Express</option>
+                    <option value="Ninja Van">Ninja Van</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Send Order via WhatsApp */}
+              <a
+                href={`https://api.whatsapp.com/send?phone=${cleanNumber}&text=${encodeURIComponent(
+                  `Hi! I want to buy your "${item.title}" for ₱${item.price} on Forever Decluttering.\n\n📦 Ship to:\nName: ${buyerName}\nAddress: ${shippingAddress}\nPreferred courier: ${courier}\n\nPlease let me know the shipping fee!\n\n${itemUrl}`
+                )}`}
+                className={`flex items-center justify-center gap-2 w-full py-4 font-display text-lg border-[3px] border-black brutal-shadow no-underline transition-all ${
+                  buyerName && shippingAddress
+                    ? 'bg-neon-pink text-black hover:brightness-110 cursor-pointer'
+                    : 'bg-gray-200 text-gray-400 pointer-events-none'
+                }`}
+              >
+                <ExternalLink className="w-5 h-5" />
+                Send Order via WhatsApp
+              </a>
+
+              <p className="mono text-[10px] text-gray-400 text-center mt-3">
+                This will open WhatsApp with your order details pre-filled.
               </p>
             </motion.div>
           </>

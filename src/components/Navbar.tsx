@@ -43,8 +43,8 @@ export default function Navbar({ user }: NavbarProps) {
     }
   };
 
-  // Logo links to user's own store if signed in, otherwise root
-  const logoTo = user && userSlug ? `/${userSlug}` : '/';
+  // Logo links to user's own store if signed in, landing page if not
+  const logoTo = user ? (userSlug ? `/${userSlug}` : '/dashboard') : '/start';
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b-[3px] border-black">

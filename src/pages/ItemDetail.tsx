@@ -3,7 +3,8 @@ import { useParams, Link } from 'react-router-dom';
 import { db } from '../firebase';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { Item, Store } from '../types';
-import { ArrowLeft, MessageCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, MessageCircle, ChevronLeft, ChevronRight, Copy, Check, X, ExternalLink } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import LoadingAnimation from '../components/LoadingAnimation';
 
 export default function ItemDetail() {
@@ -12,6 +13,9 @@ export default function ItemDetail() {
   const [store, setStore] = useState<Store | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentImage, setCurrentImage] = useState(0);
+  const [showContact, setShowContact] = useState(false);
+  const [copiedMessage, setCopiedMessage] = useState(false);
+  const [copiedNumber, setCopiedNumber] = useState(false);
 
   useEffect(() => {
     if (!itemId || !slug) return;
@@ -49,32 +53,42 @@ export default function ItemDetail() {
     );
   }
 
-  const handleContact = () => {
-    if (!store.contactNumber) return;
+  const itemUrl = `${window.location.origin}/${slug}/${itemId}`;
+  const prefilledMessage = `Hi! I'm interested in your "${item.title}" for ₱${item.price} on Forever Decluttering.\n\n${itemUrl}`;
+  const cleanNumber = store.contactNumber?.replace(/\D/g, '') || '';
 
-    const itemUrl = `${window.location.origin}/${slug}/${itemId}`;
-    const message = `Hi! I'm interested in your "${item.title}" for ₱${item.price} on Forever Decluttering.\n\n${itemUrl}`;
-    const cleanNumber = store.contactNumber.replace(/\D/g, '');
-
-    let url: string;
+  const getDeepLink = () => {
     switch (store.contactMethod) {
       case 'WhatsApp':
-        url = `https://wa.me/${cleanNumber}?text=${encodeURIComponent(message)}`;
-        break;
+        return `https://wa.me/${cleanNumber}?text=${encodeURIComponent(prefilledMessage)}`;
       case 'Viber':
-        url = `viber://chat?number=%2B${cleanNumber}`;
-        break;
+        return `viber://chat?number=%2B${cleanNumber}`;
       case 'SMS':
-        url = `sms:${store.contactNumber}?body=${encodeURIComponent(message)}`;
-        break;
+        return `sms:${store.contactNumber}?body=${encodeURIComponent(prefilledMessage)}`;
       case 'Messenger':
-        url = `https://m.me/${store.contactNumber}`;
-        break;
+        return `https://m.me/${store.contactNumber}`;
       default:
-        return;
+        return null;
     }
+  };
 
-    window.open(url, '_blank');
+  const handleCopyMessage = async () => {
+    await navigator.clipboard.writeText(prefilledMessage);
+    setCopiedMessage(true);
+    setTimeout(() => setCopiedMessage(false), 2000);
+  };
+
+  const handleCopyNumber = async () => {
+    await navigator.clipboard.writeText(store.contactNumber);
+    setCopiedNumber(true);
+    setTimeout(() => setCopiedNumber(false), 2000);
+  };
+
+  const handleOpenApp = () => {
+    const link = getDeepLink();
+    if (link) {
+      window.location.href = link;
+    }
   };
 
   const hasMultipleImages = item.images.length > 1;
@@ -171,7 +185,7 @@ export default function ItemDetail() {
 
               {item.status === 'available' ? (
                 <button
-                  onClick={handleContact}
+                  onClick={() => setShowContact(true)}
                   className="flex items-center justify-center gap-2 w-full py-4 bg-black text-white font-display text-xl hover:bg-neon-pink hover:text-black transition-all brutal-shadow border-[3px] border-black cursor-pointer"
                 >
                   <MessageCircle className="w-5 h-5" />
@@ -186,6 +200,88 @@ export default function ItemDetail() {
           </div>
         </div>
       </div>
+
+      {/* Contact Modal */}
+      <AnimatePresence>
+        {showContact && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowContact(false)}
+              className="fixed inset-0 bg-black/50 z-50"
+            />
+
+            {/* Bottom Sheet */}
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t-[3px] border-black p-6 max-h-[80vh] overflow-y-auto"
+            >
+              {/* Handle bar */}
+              <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-4" />
+
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-display">Message {store.displayName}</h2>
+                <button
+                  onClick={() => setShowContact(false)}
+                  className="p-1 border-[3px] border-black hover:bg-gray-100 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <p className="mono text-xs text-gray-400 uppercase font-bold mb-4">
+                Via {store.contactMethod}
+              </p>
+
+              {/* Contact Number */}
+              <div className="border-[3px] border-black p-3 mb-3 flex items-center justify-between">
+                <span className="mono text-sm font-bold">{store.contactNumber}</span>
+                <button
+                  onClick={handleCopyNumber}
+                  className="flex items-center gap-1 px-2 py-1 text-xs mono font-bold uppercase bg-gray-100 border-[2px] border-black hover:bg-neon-pink transition-colors"
+                >
+                  {copiedNumber ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                  {copiedNumber ? 'Copied!' : 'Copy'}
+                </button>
+              </div>
+
+              {/* Pre-filled Message */}
+              <div className="border-[3px] border-black p-3 mb-4">
+                <p className="mono text-xs text-gray-400 uppercase font-bold mb-2">Suggested message</p>
+                <p className="mono text-sm text-gray-700 whitespace-pre-line mb-2">{prefilledMessage}</p>
+                <button
+                  onClick={handleCopyMessage}
+                  className="flex items-center gap-1 px-2 py-1 text-xs mono font-bold uppercase bg-gray-100 border-[2px] border-black hover:bg-neon-pink transition-colors"
+                >
+                  {copiedMessage ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                  {copiedMessage ? 'Copied!' : 'Copy message'}
+                </button>
+              </div>
+
+              {/* Open App Button */}
+              {getDeepLink() && (
+                <button
+                  onClick={handleOpenApp}
+                  className="flex items-center justify-center gap-2 w-full py-4 bg-black text-white font-display text-lg hover:bg-neon-pink hover:text-black transition-all brutal-shadow border-[3px] border-black cursor-pointer mb-3"
+                >
+                  <ExternalLink className="w-5 h-5" />
+                  Open {store.contactMethod}
+                </button>
+              )}
+
+              <p className="mono text-[10px] text-gray-400 text-center">
+                If the app doesn't open, copy the number and message them directly.
+              </p>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

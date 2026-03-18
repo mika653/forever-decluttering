@@ -6,10 +6,10 @@
   --font-sans: "Inter", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", monospace;
 
-  --color-neon-green: #00FF00;
-  --color-neon-pink: #F472B6;
-  --color-brutal-black: #000000;
-  --color-gallery-white: #FFFFFF;
+  --color-neon-green: #00D4AA;
+  --color-neon-pink: #FF3D78;
+  --color-brutal-black: #0F0F23;
+  --color-gallery-white: #F5F5F7;
 }
 
 body {

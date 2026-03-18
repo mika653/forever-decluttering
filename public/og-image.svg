@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#F5F5F7"/>
+  <rect x="8" y="8" width="1184" height="614" rx="0" fill="#F5F5F7" stroke="#0F0F23" stroke-width="8"/>
+
+  <!-- Pink accent bar -->
+  <rect x="8" y="8" width="1184" height="80" fill="#FF3D78" stroke="#0F0F23" stroke-width="0"/>
+
+  <!-- Package icon -->
+  <g transform="translate(500, 180)">
+    <rect x="0" y="0" width="200" height="200" fill="#FF3D78" stroke="#0F0F23" stroke-width="8"/>
+    <path d="M100 40 L160 70 L160 130 L100 160 L40 130 L40 70 Z" fill="none" stroke="#0F0F23" stroke-width="6" stroke-linejoin="round"/>
+    <line x1="100" y1="100" x2="100" y2="160" stroke="#0F0F23" stroke-width="6"/>
+    <line x1="100" y1="100" x2="160" y2="70" stroke="#0F0F23" stroke-width="6"/>
+    <line x1="100" y1="100" x2="40" y2="70" stroke="#0F0F23" stroke-width="6"/>
+    <line x1="70" y1="55" x2="130" y2="85" stroke="#0F0F23" stroke-width="6"/>
+    <path d="M100 100 L160 70 L160 130 L100 160 Z" fill="white" fill-opacity="0.25"/>
+    <!-- Shadow -->
+    <rect x="6" y="6" width="200" height="200" fill="#0F0F23" rx="0" style="z-index:-1"/>
+  </g>
+  <!-- Shadow behind icon (rendered first) -->
+  <rect x="506" y="186" width="200" height="200" fill="#0F0F23"/>
+  <rect x="500" y="180" width="200" height="200" fill="#FF3D78" stroke="#0F0F23" stroke-width="8"/>
+  <g transform="translate(500, 180)">
+    <path d="M100 40 L160 70 L160 130 L100 160 L40 130 L40 70 Z" fill="none" stroke="#0F0F23" stroke-width="6" stroke-linejoin="round"/>
+    <line x1="100" y1="100" x2="100" y2="160" stroke="#0F0F23" stroke-width="6"/>
+    <line x1="100" y1="100" x2="160" y2="70" stroke="#0F0F23" stroke-width="6"/>
+    <line x1="100" y1="100" x2="40" y2="70" stroke="#0F0F23" stroke-width="6"/>
+    <line x1="70" y1="55" x2="130" y2="85" stroke="#0F0F23" stroke-width="6"/>
+    <path d="M100 100 L160 70 L160 130 L100 160 Z" fill="white" fill-opacity="0.25"/>
+  </g>
+
+  <!-- Title text -->
+  <text x="600" y="460" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="64" font-weight="900" fill="#0F0F23" letter-spacing="2">FOREVER</text>
+  <text x="600" y="530" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="64" font-weight="900" fill="#FF3D78" stroke="#0F0F23" stroke-width="2" letter-spacing="2">DECLUTTERING</text>
+
+  <!-- Tagline -->
+  <text x="600" y="580" text-anchor="middle" font-family="monospace" font-size="20" fill="#666">Snap. Post. Share. No marketplace drama.</text>
+</svg>

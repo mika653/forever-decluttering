@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="64" fill="#FF3D78"/>
+  <rect x="16" y="16" width="480" height="480" rx="48" fill="#FF3D78" stroke="#0F0F23" stroke-width="12"/>
+  <!-- Package box body -->
+  <path d="M256 160 L368 216 L368 328 L256 384 L144 328 L144 216 Z" fill="none" stroke="#0F0F23" stroke-width="14" stroke-linejoin="round"/>
+  <!-- Package center line vertical -->
+  <line x1="256" y1="272" x2="256" y2="384" stroke="#0F0F23" stroke-width="14"/>
+  <!-- Package top lines -->
+  <line x1="256" y1="272" x2="368" y2="216" stroke="#0F0F23" stroke-width="14"/>
+  <line x1="256" y1="272" x2="144" y2="216" stroke="#0F0F23" stroke-width="14"/>
+  <!-- Package top ribbon -->
+  <line x1="200" y1="188" x2="312" y2="244" stroke="#0F0F23" stroke-width="14"/>
+  <!-- White fill for front face -->
+  <path d="M256 272 L368 216 L368 328 L256 384 Z" fill="white" fill-opacity="0.25"/>
+</svg>

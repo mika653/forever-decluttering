@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { Store } from '../types';
+import { Share2, Check } from 'lucide-react';
 
 interface StoreHeaderProps {
   store: Store;
@@ -6,6 +8,30 @@ interface StoreHeaderProps {
 }
 
 export default function StoreHeader({ store, itemCount }: StoreHeaderProps) {
+  const [shared, setShared] = useState(false);
+
+  const handleShare = async () => {
+    const url = `${window.location.origin}/${store.slug}`;
+    const shareData = {
+      title: `${store.displayName} — Forever Decluttering`,
+      text: `Check out ${store.displayName}'s store on Forever Decluttering!`,
+      url,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+        return;
+      } catch {
+        // User cancelled or share failed — fall through to clipboard
+      }
+    }
+
+    await navigator.clipboard.writeText(url);
+    setShared(true);
+    setTimeout(() => setShared(false), 2000);
+  };
+
   return (
     <div className="border-[3px] border-black bg-white p-6 brutal-shadow mb-8">
       <div className="flex items-center gap-4">
@@ -48,6 +74,13 @@ export default function StoreHeader({ store, itemCount }: StoreHeaderProps) {
             )}
           </div>
         </div>
+        <button
+          onClick={handleShare}
+          className="flex items-center gap-1.5 px-3 py-2 border-[3px] border-black brutal-shadow-small bg-white hover:bg-neon-pink transition-colors mono text-xs font-bold uppercase flex-shrink-0"
+        >
+          {shared ? <Check className="w-3.5 h-3.5" /> : <Share2 className="w-3.5 h-3.5" />}
+          <span className="hidden sm:inline">{shared ? 'Copied!' : 'Share'}</span>
+        </button>
       </div>
     </div>
   );

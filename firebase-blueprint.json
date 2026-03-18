@@ -1,0 +1,43 @@
+{
+  "entities": {
+    "Store": {
+      "title": "Store",
+      "description": "A seller's personal storefront",
+      "type": "object",
+      "properties": {
+        "slug": { "type": "string", "description": "Unique URL slug for the store" },
+        "ownerId": { "type": "string", "description": "Firebase Auth UID of the store owner" },
+        "displayName": { "type": "string", "description": "Display name of the store" },
+        "bio": { "type": "string", "description": "Short bio or tagline" },
+        "photoURL": { "type": "string", "description": "Store owner's profile photo URL" },
+        "contactNumber": { "type": "string", "description": "Contact number for buyers" },
+        "contactMethod": { "type": "string", "enum": ["WhatsApp", "Viber", "SMS", "Messenger"], "description": "Preferred contact method" },
+        "paymentMethods": { "type": "array", "items": { "type": "string" }, "description": "Accepted payment methods" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["slug", "ownerId", "displayName", "contactNumber", "contactMethod"]
+    },
+    "Item": {
+      "title": "Item",
+      "description": "A decluttered item for sale",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "storeSlug": { "type": "string", "description": "Slug of the store this item belongs to" },
+        "sellerId": { "type": "string", "description": "UID of the seller" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "price": { "type": "number" },
+        "images": { "type": "array", "items": { "type": "string" } },
+        "condition": { "type": "string", "enum": ["Brand New", "Like New", "Good", "Fair", "Well-loved"] },
+        "status": { "type": "string", "enum": ["available", "sold"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["storeSlug", "sellerId", "title", "price", "status"]
+    }
+  },
+  "firestore": {
+    "/stores/{slug}": { "schema": "Store", "description": "Seller storefronts" },
+    "/items/{itemId}": { "schema": "Item", "description": "Items for sale" }
+  }
+}

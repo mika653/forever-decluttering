@@ -1,0 +1,85 @@
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Anton", sans-serif;
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  --color-neon-green: #00FF00;
+  --color-neon-pink: #FF00FF;
+  --color-brutal-black: #000000;
+  --color-gallery-white: #FFFFFF;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-gallery-white);
+  color: var(--color-brutal-black);
+}
+
+.brutal-border {
+  border: 3px solid var(--color-brutal-black);
+  box-shadow: 4px 4px 0px var(--color-brutal-black);
+}
+
+.brutal-border-thin {
+  border: 2px solid var(--color-brutal-black);
+}
+
+.brutal-shadow {
+  box-shadow: 6px 6px 0px var(--color-brutal-black);
+}
+
+.brutal-shadow-small {
+  box-shadow: 3px 3px 0px var(--color-brutal-black);
+}
+
+.brutal-btn {
+  background: var(--color-gallery-white);
+  border: 3px solid var(--color-brutal-black);
+  box-shadow: 4px 4px 0px var(--color-brutal-black);
+  transition: all 0.1s;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.brutal-btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px var(--color-brutal-black);
+  background: var(--color-neon-green);
+}
+
+.brutal-btn-pink:hover {
+  background: var(--color-neon-pink);
+}
+
+.brutal-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0px 0px 0px var(--color-brutal-black);
+}
+
+.brutal-input {
+  border: 3px solid var(--color-brutal-black);
+  padding: 0.75rem;
+  font-family: var(--font-mono);
+  width: 100%;
+  background: white;
+  transition: background 0.2s;
+}
+
+.brutal-input:focus {
+  outline: none;
+  background: var(--color-neon-pink);
+  color: black;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.mono {
+  font-family: var(--font-mono);
+}

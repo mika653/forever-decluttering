@@ -124,7 +124,7 @@ export default function Landing({ user }: LandingProps) {
       {stores.length > 0 && (
         <div className="mb-20">
           <h2 className="text-3xl font-display text-center mb-6 tracking-tighter">
-            Meet the <span className="text-neon-pink">Declutterers</span>
+            Who's <span className="text-neon-pink">Decluttering</span> Now?
           </h2>
           <div className="overflow-hidden border-y-[3px] border-black py-4 bg-white">
             <div className="flex gap-4 animate-marquee hover:[animation-play-state:paused]">

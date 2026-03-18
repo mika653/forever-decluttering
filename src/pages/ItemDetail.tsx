@@ -64,23 +64,37 @@ export default function ItemDetail() {
   const prefilledMessage = `Hi! I'm interested in your "${item.title}" for ₱${item.price} on Forever Decluttering.\n\n${itemUrl}`;
   const cleanNumber = store.contactNumber?.replace(/\D/g, '') || '';
 
-  // Only return HTTPS-based links that browsers handle safely.
-  // Protocol links (viber://, sms:) can cause SSL errors on some browsers.
-  const getWebLink = (): { url: string; label: string } | null => {
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+  // Returns link(s) for contacting the seller
+  const getWebLinks = (): { url: string; label: string }[] => {
     switch (store.contactMethod) {
       case 'WhatsApp':
-        return {
-          url: `https://api.whatsapp.com/send?phone=${cleanNumber}&text=${encodeURIComponent(prefilledMessage)}`,
-          label: 'Open WhatsApp',
-        };
+        if (isMobile) {
+          return [{
+            url: `https://api.whatsapp.com/send?phone=${cleanNumber}&text=${encodeURIComponent(prefilledMessage)}`,
+            label: 'Open WhatsApp',
+          }];
+        }
+        // Desktop: offer both web and app
+        return [
+          {
+            url: `https://web.whatsapp.com/send?phone=${cleanNumber}&text=${encodeURIComponent(prefilledMessage)}`,
+            label: 'Open WhatsApp Web',
+          },
+          {
+            url: `https://api.whatsapp.com/send?phone=${cleanNumber}&text=${encodeURIComponent(prefilledMessage)}`,
+            label: 'Open WhatsApp App',
+          },
+        ];
       case 'Messenger':
-        return {
+        return [{
           url: `https://m.me/${store.contactNumber}`,
           label: 'Open Messenger',
-        };
+        }];
       default:
         // Viber and SMS: no reliable web link — user copies number instead
-        return null;
+        return [];
     }
   };
 
@@ -302,16 +316,23 @@ export default function ItemDetail() {
                 </button>
               </div>
 
-              {/* Open App Link — only for HTTPS-based links (WhatsApp, Messenger) */}
-              {getWebLink() && (
+              {/* Open App Links */}
+              {getWebLinks().map((link, idx) => (
                 <a
-                  href={getWebLink()!.url}
-                  className="flex items-center justify-center gap-2 w-full py-4 bg-black text-white font-display text-lg hover:bg-neon-pink hover:text-black transition-all brutal-shadow border-[3px] border-black cursor-pointer mb-3 no-underline"
+                  key={idx}
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`flex items-center justify-center gap-2 w-full py-4 font-display text-lg transition-all brutal-shadow border-[3px] border-black cursor-pointer mb-3 no-underline ${
+                    idx === 0
+                      ? 'bg-black text-white hover:bg-neon-pink hover:text-black'
+                      : 'bg-white text-black hover:bg-gray-100'
+                  }`}
                 >
                   <ExternalLink className="w-5 h-5" />
-                  {getWebLink()!.label}
+                  {link.label}
                 </a>
-              )}
+              ))}
 
               <p className="mono text-[10px] text-gray-400 text-center">
                 If the app doesn't open, copy the number and message them directly.
@@ -478,9 +499,11 @@ export default function ItemDetail() {
 
               {/* Send Order via WhatsApp */}
               <a
-                href={`https://api.whatsapp.com/send?phone=${cleanNumber}&text=${encodeURIComponent(
+                href={`https://${isMobile ? 'api' : 'web'}.whatsapp.com/send?phone=${cleanNumber}&text=${encodeURIComponent(
                   `Hi! I want to buy your "${item.title}" for ₱${item.price} on Forever Decluttering.\n\n📦 Ship to:\nName: ${buyerName}\nAddress: ${shippingAddress}\nPreferred courier: ${courier}\n\nPlease let me know the shipping fee!\n\n${itemUrl}`
                 )}`}
+                target="_blank"
+                rel="noopener noreferrer"
                 className={`flex items-center justify-center gap-2 w-full py-4 font-display text-lg border-[3px] border-black brutal-shadow no-underline transition-all ${
                   buyerName && shippingAddress
                     ? 'bg-neon-pink text-black hover:brightness-110 cursor-pointer'

@@ -377,9 +377,14 @@ export default function StoreSetup({ user }: StoreSetupProps) {
                 value={contactNumber}
                 onChange={(e) => setContactNumber(e.target.value)}
                 className="brutal-input text-lg w-full py-4 px-4"
-                placeholder="+63 917 123 4567"
+                placeholder={contactMethod === 'Messenger' ? 'your.username' : '+63 917 123 4567'}
                 autoFocus
               />
+              {contactMethod === 'Messenger' && (
+                <p className="mono text-xs text-gray-400">
+                  Enter your Messenger username (found in your Facebook profile URL).
+                </p>
+              )}
             </div>
             <NavButtons />
           </div>

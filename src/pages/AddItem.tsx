@@ -161,7 +161,6 @@ export default function AddItem({ user, storeSlug }: AddItemProps) {
               ref={fileInputRef}
               type="file"
               accept="image/*"
-              capture="environment"
               multiple
               onChange={handlePhotoSelect}
               className="hidden"

@@ -124,6 +124,14 @@ export default function App() {
               }
             />
             <Route
+              path="/dashboard/edit/:itemId"
+              element={
+                <AuthGuard user={user}>
+                  <AddItemWrapper user={user!} />
+                </AuthGuard>
+              }
+            />
+            <Route
               path="/dashboard/store-setup"
               element={
                 <AuthGuard user={user}>
@@ -144,6 +152,32 @@ export default function App() {
 
             {/* Explore declutterers */}
             <Route path="/explore" element={<ExploreDeclutterers />} />
+
+            {/* Slug-based dashboard */}
+            <Route
+              path="/:slug/dashboard"
+              element={
+                <AuthGuard user={user}>
+                  <Dashboard user={user!} />
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/:slug/dashboard/add"
+              element={
+                <AuthGuard user={user}>
+                  <AddItemWrapper user={user!} />
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/:slug/dashboard/edit/:itemId"
+              element={
+                <AuthGuard user={user}>
+                  <AddItemWrapper user={user!} />
+                </AuthGuard>
+              }
+            />
 
             {/* Public store routes */}
             <Route path="/:slug" element={<StorePage />} />

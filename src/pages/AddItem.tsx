@@ -1,11 +1,12 @@
-import React, { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { User } from 'firebase/auth';
 import { db } from '../firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { uploadItemImage } from '../lib/storage';
 import { Camera, Plus, X, Loader2 } from 'lucide-react';
 import { motion } from 'motion/react';
+import { Item } from '../types';
 
 interface AddItemProps {
   user: User;
@@ -14,21 +15,50 @@ interface AddItemProps {
 
 export default function AddItem({ user, storeSlug }: AddItemProps) {
   const navigate = useNavigate();
+  const { itemId } = useParams<{ itemId: string }>();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [photos, setPhotos] = useState<File[]>([]);
   const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
+  const [existingImages, setExistingImages] = useState<string[]>([]);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [condition, setCondition] = useState('Good');
   const [price, setPrice] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [loadingItem, setLoadingItem] = useState(!!itemId);
+  const isEditing = !!itemId;
+
+  // Load existing item for editing
+  useEffect(() => {
+    if (!itemId) return;
+
+    const loadItem = async () => {
+      try {
+        const itemDoc = await getDoc(doc(db, 'items', itemId));
+        if (itemDoc.exists()) {
+          const data = itemDoc.data() as Item;
+          setTitle(data.title);
+          setDescription(data.description);
+          setCondition(data.condition || 'Good');
+          setPrice(String(data.price));
+          setExistingImages(data.images || []);
+        }
+      } catch (err) {
+        console.error('Error loading item:', err);
+      } finally {
+        setLoadingItem(false);
+      }
+    };
+    loadItem();
+  }, [itemId]);
 
   const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
 
-    const newPhotos = [...photos, ...files].slice(0, 5);
+    const totalSlots = 5 - existingImages.length;
+    const newPhotos = [...photos, ...files].slice(0, totalSlots);
     setPhotos(newPhotos);
     setPhotoPreviews(newPhotos.map((file) => URL.createObjectURL(file)));
   };
@@ -38,30 +68,52 @@ export default function AddItem({ user, storeSlug }: AddItemProps) {
     setPhotoPreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const removeExistingImage = (index: number) => {
+    setExistingImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (photos.length === 0 || !price) return;
+    if ((photos.length === 0 && existingImages.length === 0) || !price) return;
 
     setSubmitting(true);
     try {
-      const itemRef = await addDoc(collection(db, 'items'), {
-        storeSlug,
-        sellerId: user.uid,
-        title,
-        description,
-        price: parseFloat(price),
-        condition,
-        images: [],
-        status: 'available',
-        createdAt: serverTimestamp(),
-      });
+      if (isEditing && itemId) {
+        // Upload new photos if any
+        let newImageUrls: string[] = [];
+        if (photos.length > 0) {
+          newImageUrls = await Promise.all(
+            photos.map((file) => uploadItemImage(storeSlug, itemId, file))
+          );
+        }
 
-      const imageUrls = await Promise.all(
-        photos.map((file) => uploadItemImage(storeSlug, itemRef.id, file))
-      );
+        await updateDoc(doc(db, 'items', itemId), {
+          title,
+          description,
+          price: parseFloat(price),
+          condition,
+          images: [...existingImages, ...newImageUrls],
+        });
+      } else {
+        // Create new item
+        const itemRef = await addDoc(collection(db, 'items'), {
+          storeSlug,
+          sellerId: user.uid,
+          title,
+          description,
+          price: parseFloat(price),
+          condition,
+          images: [],
+          status: 'available',
+          createdAt: serverTimestamp(),
+        });
 
-      const { updateDoc, doc } = await import('firebase/firestore');
-      await updateDoc(doc(db, 'items', itemRef.id), { images: imageUrls });
+        const imageUrls = await Promise.all(
+          photos.map((file) => uploadItemImage(storeSlug, itemRef.id, file))
+        );
+
+        await updateDoc(doc(db, 'items', itemRef.id), { images: imageUrls });
+      }
 
       navigate('/dashboard');
     } catch (err) {
@@ -71,6 +123,19 @@ export default function AddItem({ user, storeSlug }: AddItemProps) {
     }
   };
 
+  if (loadingItem) {
+    return (
+      <div className="max-w-xl mx-auto px-4 py-8">
+        <div className="border-[3px] border-black p-12 bg-white brutal-shadow text-center">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto text-gray-400" />
+        </div>
+      </div>
+    );
+  }
+
+  const hasImages = existingImages.length > 0 || photos.length > 0;
+  const totalImages = existingImages.length + photos.length;
+
   return (
     <div className="max-w-xl mx-auto px-4 py-8">
       <motion.div
@@ -78,18 +143,33 @@ export default function AddItem({ user, storeSlug }: AddItemProps) {
         animate={{ opacity: 1, y: 0 }}
         className="border-[3px] border-black p-6 bg-white brutal-shadow"
       >
-        <h1 className="text-3xl font-display mb-1">Add Item</h1>
-        <p className="mono text-sm text-gray-500 mb-6">Snap a photo, fill in the details, post.</p>
+        <h1 className="text-3xl font-display mb-1">{isEditing ? 'Edit Item' : 'Add Item'}</h1>
+        <p className="mono text-sm text-gray-500 mb-6">
+          {isEditing ? 'Update the details below.' : 'Snap a photo, fill in the details, post.'}
+        </p>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Photo Section */}
           <div>
             <label className="mono text-xs font-bold uppercase block mb-2">Photos</label>
 
-            {photoPreviews.length > 0 && (
+            {/* Existing + new photos grid */}
+            {(existingImages.length > 0 || photoPreviews.length > 0) && (
               <div className="grid grid-cols-3 gap-2 mb-3">
+                {existingImages.map((url, idx) => (
+                  <div key={`existing-${idx}`} className="relative aspect-square border-[3px] border-black overflow-hidden">
+                    <img src={url} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                    <button
+                      type="button"
+                      onClick={() => removeExistingImage(idx)}
+                      className="absolute top-1 right-1 bg-black text-white p-0.5 hover:bg-red-500 transition-colors"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
                 {photoPreviews.map((preview, idx) => (
-                  <div key={idx} className="relative aspect-square border-[3px] border-black overflow-hidden">
+                  <div key={`new-${idx}`} className="relative aspect-square border-[3px] border-black overflow-hidden">
                     <img src={preview} alt="" className="w-full h-full object-cover" />
                     <button
                       type="button"
@@ -100,7 +180,7 @@ export default function AddItem({ user, storeSlug }: AddItemProps) {
                     </button>
                   </div>
                 ))}
-                {photos.length < 5 && (
+                {totalImages < 5 && (
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
@@ -112,7 +192,7 @@ export default function AddItem({ user, storeSlug }: AddItemProps) {
               </div>
             )}
 
-            {photos.length === 0 && (
+            {!hasImages && (
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
@@ -137,8 +217,8 @@ export default function AddItem({ user, storeSlug }: AddItemProps) {
             />
           </div>
 
-          {/* Details (shown after photo) */}
-          {photos.length > 0 && (
+          {/* Details (always shown when editing, shown after photo when adding) */}
+          {(isEditing || photos.length > 0) && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -198,16 +278,16 @@ export default function AddItem({ user, storeSlug }: AddItemProps) {
 
               <button
                 type="submit"
-                disabled={submitting || photos.length === 0}
+                disabled={submitting || (!hasImages)}
                 className="w-full py-3 bg-black text-white font-display text-lg hover:bg-neon-pink hover:text-black transition-all brutal-shadow border-[3px] border-black disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {submitting ? (
                   <>
                     <Loader2 className="w-5 h-5 animate-spin" />
-                    Posting...
+                    {isEditing ? 'Saving...' : 'Posting...'}
                   </>
                 ) : (
-                  'Post Item'
+                  isEditing ? 'Save Changes' : 'Post Item'
                 )}
               </button>
             </motion.div>

@@ -13,7 +13,7 @@ import {
 } from 'firebase/firestore';
 import { Store, Item } from '../types';
 import ItemCard from '../components/ItemCard';
-import { Plus, Settings, Copy, Check, ExternalLink } from 'lucide-react';
+import { Plus, Settings, Copy, Check, ExternalLink, Pencil } from 'lucide-react';
 import LoadingAnimation from '../components/LoadingAnimation';
 
 interface DashboardProps {
@@ -69,11 +69,18 @@ export default function Dashboard({ user }: DashboardProps) {
 
   const handleMarkSold = async (itemId: string) => {
     await updateDoc(doc(db, 'items', itemId), { status: 'sold' });
+    setItems((prev) => prev.map((i) => i.id === itemId ? { ...i, status: 'sold' } : i));
+  };
+
+  const handleMarkAvailable = async (itemId: string) => {
+    await updateDoc(doc(db, 'items', itemId), { status: 'available' });
+    setItems((prev) => prev.map((i) => i.id === itemId ? { ...i, status: 'available' } : i));
   };
 
   const handleDelete = async (itemId: string) => {
     if (!confirm('Delete this item?')) return;
     await deleteDoc(doc(db, 'items', itemId));
+    setItems((prev) => prev.filter((i) => i.id !== itemId));
   };
 
   const copyLink = async () => {
@@ -169,6 +176,8 @@ export default function Dashboard({ user }: DashboardProps) {
               storeSlug={store.slug}
               showStatus
               onMarkSold={() => handleMarkSold(item.id)}
+              onMarkAvailable={() => handleMarkAvailable(item.id)}
+              onEdit={() => navigate(`/dashboard/edit/${item.id}`)}
               onDelete={() => handleDelete(item.id)}
             />
           </div>

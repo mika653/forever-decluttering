@@ -1,16 +1,21 @@
 import { Link } from 'react-router-dom';
 import { Item } from '../types';
 import { motion } from 'motion/react';
+import { Pencil } from 'lucide-react';
 
 interface ItemCardProps {
   item: Item;
   storeSlug: string;
   showStatus?: boolean;
   onMarkSold?: () => void;
+  onMarkAvailable?: () => void;
+  onEdit?: () => void;
   onDelete?: () => void;
 }
 
-export default function ItemCard({ item, storeSlug, showStatus, onMarkSold, onDelete }: ItemCardProps) {
+export default function ItemCard({ item, storeSlug, showStatus, onMarkSold, onMarkAvailable, onEdit, onDelete }: ItemCardProps) {
+  const hasActions = onMarkSold || onMarkAvailable || onEdit || onDelete;
+
   return (
     <motion.div
       whileHover={{ scale: 1.02, rotate: -1 }}
@@ -50,9 +55,9 @@ export default function ItemCard({ item, storeSlug, showStatus, onMarkSold, onDe
         </div>
       </Link>
 
-      {(onMarkSold || onDelete) && item.status === 'available' && (
-        <div className="px-3 pb-3 flex gap-2">
-          {onMarkSold && (
+      {hasActions && (
+        <div className="px-3 pb-3 flex gap-2 flex-wrap">
+          {item.status === 'available' && onMarkSold && (
             <button
               onClick={onMarkSold}
               className="flex-1 py-1.5 text-xs font-bold uppercase bg-neon-green border-[3px] border-black brutal-shadow-small hover:translate-y-[-1px] transition-transform"
@@ -60,12 +65,28 @@ export default function ItemCard({ item, storeSlug, showStatus, onMarkSold, onDe
               Mark Sold
             </button>
           )}
+          {item.status === 'sold' && onMarkAvailable && (
+            <button
+              onClick={onMarkAvailable}
+              className="flex-1 py-1.5 text-xs font-bold uppercase bg-blue-200 border-[3px] border-black brutal-shadow-small hover:translate-y-[-1px] transition-transform"
+            >
+              Relist
+            </button>
+          )}
+          {onEdit && (
+            <button
+              onClick={onEdit}
+              className="py-1.5 px-3 text-xs font-bold uppercase bg-white border-[3px] border-black brutal-shadow-small hover:translate-y-[-1px] transition-transform"
+            >
+              <Pencil className="w-3 h-3" />
+            </button>
+          )}
           {onDelete && (
             <button
               onClick={onDelete}
               className="py-1.5 px-3 text-xs font-bold uppercase bg-red-500 text-white border-[3px] border-black brutal-shadow-small hover:translate-y-[-1px] transition-transform"
             >
-              Delete
+              Del
             </button>
           )}
         </div>

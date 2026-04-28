@@ -2,8 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { User } from 'firebase/auth';
 import { db } from '../firebase';
-import { collection, addDoc, serverTimestamp, doc, getDoc, updateDoc } from 'firebase/firestore';
-import { uploadItemImage } from '../lib/storage';
+import { collection, serverTimestamp, doc, getDoc, updateDoc, setDoc } from 'firebase/firestore';
+import { uploadItemImage, compressImage } from '../lib/storage';
 import { Camera, Plus, X, Loader2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Item } from '../types';
@@ -27,6 +27,7 @@ export default function AddItem({ user, storeSlug }: AddItemProps) {
   const [price, setPrice] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [loadingItem, setLoadingItem] = useState(!!itemId);
+  const [error, setError] = useState<string | null>(null);
   const isEditing = !!itemId;
 
   // Load existing item for editing
@@ -77,15 +78,16 @@ export default function AddItem({ user, storeSlug }: AddItemProps) {
     if ((photos.length === 0 && existingImages.length === 0) || !price) return;
 
     setSubmitting(true);
+    setError(null);
     try {
+      const compressed = await Promise.all(photos.map((f) => compressImage(f)));
+
       if (isEditing && itemId) {
-        // Upload new photos if any
-        let newImageUrls: string[] = [];
-        if (photos.length > 0) {
-          newImageUrls = await Promise.all(
-            photos.map((file) => uploadItemImage(storeSlug, itemId, file))
-          );
-        }
+        const newImageUrls = compressed.length
+          ? await Promise.all(
+              compressed.map((file) => uploadItemImage(storeSlug, itemId, file))
+            )
+          : [];
 
         await updateDoc(doc(db, 'items', itemId), {
           title,
@@ -95,29 +97,34 @@ export default function AddItem({ user, storeSlug }: AddItemProps) {
           images: [...existingImages, ...newImageUrls],
         });
       } else {
-        // Create new item
-        const itemRef = await addDoc(collection(db, 'items'), {
+        const itemRef = doc(collection(db, 'items'));
+        const imageUrls = await Promise.all(
+          compressed.map((file) => uploadItemImage(storeSlug, itemRef.id, file))
+        );
+
+        await setDoc(itemRef, {
           storeSlug,
           sellerId: user.uid,
           title,
           description,
           price: parseFloat(price),
           condition,
-          images: [],
+          images: imageUrls,
           status: 'available',
           createdAt: serverTimestamp(),
         });
-
-        const imageUrls = await Promise.all(
-          photos.map((file) => uploadItemImage(storeSlug, itemRef.id, file))
-        );
-
-        await updateDoc(doc(db, 'items', itemRef.id), { images: imageUrls });
       }
 
       navigate('/dashboard');
-    } catch (err) {
+    } catch (err: any) {
       console.error('Submit error', err);
+      const code = err?.code || '';
+      const msg = err?.message || 'Something went wrong.';
+      if (code.startsWith('storage/')) {
+        setError(`Photo upload failed (${code}). Try a smaller photo or check your connection.`);
+      } else {
+        setError(msg);
+      }
     } finally {
       setSubmitting(false);
     }
@@ -275,6 +282,12 @@ export default function AddItem({ user, storeSlug }: AddItemProps) {
                   </select>
                 </div>
               </div>
+
+              {error && (
+                <div className="border-[3px] border-black bg-red-100 p-3 mono text-xs">
+                  {error}
+                </div>
+              )}
 
               <button
                 type="submit"
